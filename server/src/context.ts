@@ -1,5 +1,6 @@
 import type { ServerEvent } from '../../shared/protocol';
 import type { Config } from './config';
+import type { SocketRegistry } from './ws';
 
 type Listener = (event: ServerEvent) => void;
 
@@ -26,4 +27,6 @@ export interface Ctx {
   bus: EventBus;
   /** Run on shutdown, in reverse order of registration. */
   onClose(fn: () => void | Promise<void>): void;
+  /** Guarded WebSocket paths and the events socket, from ws.ts. */
+  sockets?: SocketRegistry;
 }

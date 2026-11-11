@@ -4,6 +4,8 @@ import fastifyStatic from '@fastify/static';
 import { registerAuth } from './auth';
 import { loadConfig, type Config } from './config';
 import { EventBus, type Ctx } from './context';
+import { registerSystem } from './system';
+import { registerWs } from './ws';
 
 export interface SpecOS {
   app: FastifyInstance;
@@ -34,6 +36,8 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<SpecOS>
 
   // --- modules register here, access control first ---
   registerAuth(app, ctx);
+  registerWs(app, ctx);
+  registerSystem(app, ctx);
 
   app.get('/api/health', async () => ({ ok: true }));
 
