@@ -16,6 +16,8 @@ interface AgentsState {
   runner: AgentsResponse['runner'] | null;
   /** True once GET /api/agents has answered. */
   loaded: boolean;
+  /** The name and colour the server will give the next new jobs, in order. */
+  upcoming: Array<Pick<AgentInfo, 'name' | 'hue'>>;
 
   /** Replaces the list with the server's (first load and after a reconnect). */
   replaceAll(response: AgentsResponse): void;
@@ -25,19 +27,24 @@ interface AgentsState {
   remove(id: string): void;
   /** Appends stream events, ignoring any seq already held. */
   appendEvents(id: string, events: AgentStreamEvent[]): void;
+  /** Stores the server's forecast of the next identities. */
+  setUpcoming(upcoming: Array<Pick<AgentInfo, 'name' | 'hue'>>): void;
+  /** Takes the next forecast identity for a job that is being started; undefined when none is left. */
+  takeUpcoming(): Pick<AgentInfo, 'name' | 'hue'> | undefined;
 }
 
-export const useAgentsStore = create<AgentsState>((set) => ({
+export const useAgentsStore = create<AgentsState>((set, get) => ({
   agents: {},
   events: {},
   runner: null,
   loaded: false,
+  upcoming: [],
 
   replaceAll: (response) =>
     set((state) => {
       const agents = Object.fromEntries(response.agents.map((agent) => [agent.id, agent]));
       const events = Object.fromEntries(Object.entries(state.events).filter(([id]) => id in agents));
-      return { agents, events, runner: response.runner, loaded: true };
+      return { agents, events, runner: response.runner, loaded: true, upcoming: response.upcoming ?? [] };
     }),
 
   upsert: (agent) => set((state) => ({ agents: { ...state.agents, [agent.id]: agent } })),
@@ -65,6 +72,14 @@ export const useAgentsStore = create<AgentsState>((set) => ({
       }
       return { events: { ...state.events, [id]: next.slice(-AGENT_EVENTS_CAP) } };
     }),
+
+  setUpcoming: (upcoming) => set({ upcoming }),
+
+  takeUpcoming: () => {
+    const [next, ...rest] = get().upcoming;
+    if (next) set({ upcoming: rest });
+    return next;
+  },
 }));
 
 /** An agent that is still working: these count in the menu bar and pulse in the dock. */

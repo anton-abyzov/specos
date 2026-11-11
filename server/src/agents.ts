@@ -47,6 +47,8 @@ export interface AgentsService {
   events(id: string, since: number): AgentStreamEvent[];
   /** Jobs that are starting or running. */
   runningCount(): number;
+  /** The name and colour the next `count` new jobs will get, in order, as long as no job is removed first. */
+  upcoming(count: number): Array<Pick<AgentInfo, 'name' | 'hue'>>;
 }
 
 const REGISTRY_FILE = 'agents.json';
@@ -74,6 +76,9 @@ const NAMES = [
 /** Each new agent's colour is this far round the wheel from the last: neighbours differ, and no two repeat soon. */
 const GOLDEN_ANGLE = 137.508;
 const FIRST_HUE = 28;
+
+/** How many identities ahead GET /api/agents announces: enough for a burst of messages sent before any answer. */
+const UPCOMING_IDENTITIES = 6;
 
 const refuse = (status: number, code: string, message: string): WorkspaceError => new WorkspaceError(status, code, message);
 const badRequest = (message: string): WorkspaceError => refuse(400, 'bad_request', message);
@@ -227,9 +232,7 @@ export async function registerAgents(app: FastifyInstance, ctx: Ctx): Promise<vo
     return id;
   }
 
-  function nextIdentity(): { name: string; hue: number } {
-    const taken = new Set([...reservedNames, ...[...jobs.values()].map((job) => job.info.name)]);
-    const position = sequence++;
+  function identityAt(position: number, taken: Set<string>): { name: string; hue: number } {
     // The list from where the last agent left off; once every name is out, a second round with a number.
     let name = '';
     for (let round = 1; name === ''; round++) {
@@ -237,6 +240,21 @@ export async function registerAgents(app: FastifyInstance, ctx: Ctx): Promise<vo
       name = candidates.map((candidate) => (round === 1 ? candidate : `${candidate} ${round}`)).find((candidate) => !taken.has(candidate)) ?? '';
     }
     return { name, hue: Math.round(FIRST_HUE + position * GOLDEN_ANGLE) % 360 };
+  }
+
+  const takenNames = (): Set<string> => new Set([...reservedNames, ...[...jobs.values()].map((job) => job.info.name)]);
+
+  function nextIdentity(): { name: string; hue: number } {
+    return identityAt(sequence++, takenNames());
+  }
+
+  function upcomingIdentities(count: number): Array<{ name: string; hue: number }> {
+    const taken = takenNames();
+    return Array.from({ length: count }, (_, index) => {
+      const identity = identityAt(sequence + index, taken);
+      taken.add(identity.name);
+      return identity;
+    });
   }
 
   /** An empty project for a job that was started without one: a folder with a README, so there is something to clone. */
@@ -432,6 +450,7 @@ export async function registerAgents(app: FastifyInstance, ctx: Ctx): Promise<vo
       save();
     },
     events: (id, since) => known(id).events.filter((event) => event.seq > since),
+    upcoming: upcomingIdentities,
     runningCount: () => [...jobs.values()].filter((job) => !isFinished(job.info.status)).length,
   };
   ctx.agents = service;
@@ -512,7 +531,11 @@ export async function registerAgents(app: FastifyInstance, ctx: Ctx): Promise<vo
       });
     }
 
-    api.get('/api/agents', async (): Promise<AgentsResponse> => ({ agents: service.list(), runner: await detectRunner(config) }));
+    api.get('/api/agents', async (): Promise<AgentsResponse> => ({
+      agents: service.list(),
+      runner: await detectRunner(config),
+      upcoming: service.upcoming(UPCOMING_IDENTITIES),
+    }));
 
     api.get('/api/agents/:id', async (request): Promise<AgentInfo> => known(idOf(request)).info);
 

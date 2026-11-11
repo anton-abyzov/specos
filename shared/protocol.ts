@@ -271,6 +271,8 @@ export interface AgentStreamEvent {
 export interface AgentsResponse {
   agents: AgentInfo[];
   runner: { available: AgentRunner; claudeVersion?: string };
+  /** The name and colour the next new jobs will get, in order, so the desktop can show an agent before its job exists. */
+  upcoming?: Array<Pick<AgentInfo, 'name' | 'hue'>>;
 }
 
 /** GET /api/agents/:id/events?since=seq */

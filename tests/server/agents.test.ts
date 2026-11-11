@@ -219,6 +219,27 @@ describe.concurrent('starting a job', () => {
     await ended(info.id);
   });
 
+  test('the list announces the names and colours the next jobs will get', async () => {
+    const own = await startTestServer({ demoSpeed: FAST });
+    try {
+      const before = (await (await own.fetch('/api/agents')).json()) as AgentsResponse;
+      expect(before.upcoming).toHaveLength(6);
+      expect(new Set(before.upcoming!.map((identity) => identity.name)).size).toBe(6);
+
+      const first = await startAgent({ prompt: 'First' }, own);
+      const second = await startAgent({ prompt: 'Second' }, own);
+      expect({ name: first.name, hue: first.hue }).toEqual(before.upcoming![0]);
+      expect({ name: second.name, hue: second.hue }).toEqual(before.upcoming![1]);
+
+      const after = (await (await own.fetch('/api/agents')).json()) as AgentsResponse;
+      expect(after.upcoming![0]).toEqual(before.upcoming![2]);
+      await ended(first.id, own);
+      await ended(second.id, own);
+    } finally {
+      await own.close();
+    }
+  });
+
   test('without a project the agent gets an empty scratch project of its own', async () => {
     const info = await startAgent({ prompt: 'Think about names for a boat' });
 
