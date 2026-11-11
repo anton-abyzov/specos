@@ -1,12 +1,13 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { expect, type Page } from '@playwright/test';
 
 export const E2E_TOKEN = process.env.E2E_TOKEN ?? 'e2e-token-0123456789';
 const port = process.env.E2E_PORT ?? '7391';
 
-/** The throwaway home folder of the server this run talks to. */
-export const E2E_HOME = path.resolve(import.meta.dirname, `../../.e2e/home-${port}`);
+/** The throwaway home folder of the server this run talks to (see scripts/e2e-server.mjs). */
+export const E2E_HOME = path.join(os.tmpdir(), `specos-e2e-${port}`, 'home');
 
 /** Where per-task screenshots go (ignored by git). */
 export const SHOTS = path.resolve(
