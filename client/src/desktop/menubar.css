@@ -166,6 +166,11 @@
   color: var(--ink-soft);
 }
 
+.status-item[aria-pressed='true'] {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
 /* Desktops: four small sheets, the current one inked in. */
 .desktops {
   display: flex;
@@ -174,6 +179,7 @@
 }
 
 .desktops__slot {
+  position: relative;
   display: grid;
   place-items: center;
   width: 20px;
@@ -204,6 +210,19 @@
 .desktops__slot[data-current] .desktops__sheet {
   background: var(--ink);
   transform: scale(1.08);
+}
+
+/* A desktop that holds windows carries a short rule under its sheet. */
+.desktops__slot[data-occupied]::after {
+  content: '';
+  position: absolute;
+  bottom: 1px;
+  left: 50%;
+  width: 6px;
+  height: 1.5px;
+  margin-left: -3px;
+  border-radius: var(--r-full);
+  background: var(--accent);
 }
 
 /* Agents: a dot that pulses while anything is running, and the count. */

@@ -10,7 +10,14 @@ import type { AppId } from '../apps/registry';
 
 export const DESKTOP_COUNT = 4;
 
-export type WindowCommand = 'minimise' | 'fullscreen' | 'close';
+export type WindowCommand =
+  | 'minimise'
+  | 'fullscreen'
+  | 'close'
+  | 'snap-left'
+  | 'snap-right'
+  | 'restore'
+  | 'next-window';
 
 /** An open window of the 'agent' app. Its agent keeps a dock icon for as long as it exists. */
 export interface AgentWindow {
@@ -32,6 +39,10 @@ export interface WindowSnapshot {
   tiling: boolean;
   launcherOpen: boolean;
   overviewOpen: boolean;
+  /** Desktops that hold at least one window. */
+  occupiedDesktops: number[];
+  /** True while the front window is full screen: the dock tucks out of its way. */
+  immersive: boolean;
 }
 
 /** What a window manager implements to take over the shell's actions. */
@@ -46,6 +57,8 @@ export interface WindowManagerPort {
   toggleOverview(): void;
   /** Applies a command to the front window. */
   windowCommand(command: WindowCommand): void;
+  /** Sends the front window to another desktop. */
+  moveWindowToDesktop(index: number): void;
 }
 
 interface ShellState extends WindowSnapshot, WindowManagerPort {
@@ -93,6 +106,9 @@ export const useShellStore = create<ShellState>((set, get) => {
     windowCommand: () => {
       // No windows exist without a window manager; the menu bar disables these items.
     },
+    moveWindowToDesktop: () => {
+      // Nothing to move for the same reason.
+    },
   };
 
   let port: WindowManagerPort = builtIn;
@@ -106,6 +122,8 @@ export const useShellStore = create<ShellState>((set, get) => {
     tiling: false,
     launcherOpen: false,
     overviewOpen: false,
+    occupiedDesktops: [],
+    immersive: false,
     managed: false,
 
     launchApp: (appId, params) => port.launchApp(appId, params),
@@ -115,11 +133,20 @@ export const useShellStore = create<ShellState>((set, get) => {
     toggleLauncher: () => port.toggleLauncher(),
     toggleOverview: () => port.toggleOverview(),
     windowCommand: (command) => port.windowCommand(command),
+    moveWindowToDesktop: (index) => port.moveWindowToDesktop(clampDesktop(index)),
 
     registerWindowManager(next) {
       port = next;
       // Whatever the built-in port recorded is not real; the manager reports the truth next.
-      set({ managed: true, activeAppId: null, activeWindowId: null, runningApps: [], agentWindows: [] });
+      set({
+        managed: true,
+        activeAppId: null,
+        activeWindowId: null,
+        runningApps: [],
+        agentWindows: [],
+        occupiedDesktops: [],
+        immersive: false,
+      });
       return () => {
         if (port !== next) return;
         port = builtIn;

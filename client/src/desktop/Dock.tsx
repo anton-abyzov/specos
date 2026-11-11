@@ -176,6 +176,7 @@ export function Dock() {
   const row = useRef<HTMLUListElement>(null);
   const agents = useAgentList();
   const agentWindows = useShellStore((state) => state.agentWindows);
+  const tucked = useShellStore((state) => state.immersive);
 
   const windowed = useMemo(() => new Set(agentWindows.map((window) => window.agentId)), [agentWindows]);
   const dockAgents = agents.filter((agent) => isAgentActive(agent) || windowed.has(agent.id));
@@ -205,6 +206,7 @@ export function Dock() {
         className="dock"
         aria-label="Dock"
         data-testid="dock"
+        data-tucked={tucked || undefined}
         onPointerMove={onPointerMove}
         onPointerLeave={() => magnifier.release()}
       >

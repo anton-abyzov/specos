@@ -13,6 +13,8 @@ const DESKTOPS = Array.from({ length: DESKTOP_COUNT }, (_, index) => index);
 export function DesktopSwitcher() {
   const current = useShellStore((state) => state.desktop);
   const setDesktop = useShellStore((state) => state.setDesktop);
+  const occupied = useShellStore((state) => state.occupiedDesktops);
+  const label = (index: number) => `Desktop ${index + 1}${occupied.includes(index) ? ', has windows' : ''}`;
   return (
     <div className="desktops" role="group" aria-label="Desktops" data-testid="desktops">
       {DESKTOPS.map((index) => (
@@ -22,7 +24,8 @@ export function DesktopSwitcher() {
           className="desktops__slot"
           data-testid={`desktop-slot-${index + 1}`}
           data-current={current === index || undefined}
-          aria-label={`Desktop ${index + 1}`}
+          data-occupied={occupied.includes(index) || undefined}
+          aria-label={label(index)}
           aria-pressed={current === index}
           title={`Desktop ${index + 1}`}
           onClick={() => setDesktop(index)}
@@ -31,6 +34,26 @@ export function DesktopSwitcher() {
         </button>
       ))}
     </div>
+  );
+}
+
+/** Turns tiling on or off for the current desktop. */
+export function TilingToggle() {
+  const tiling = useShellStore((state) => state.tiling);
+  const toggleTiling = useShellStore((state) => state.toggleTiling);
+  const label = tiling ? 'Stop tiling windows' : 'Tile windows';
+  return (
+    <button
+      type="button"
+      className="status-item status-item--icon"
+      data-testid="tiling-toggle"
+      aria-label={label}
+      aria-pressed={tiling}
+      title={`${label} (Ctrl Alt T)`}
+      onClick={toggleTiling}
+    >
+      <Glyph name="layout" size={15} />
+    </button>
   );
 }
 

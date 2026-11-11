@@ -1,0 +1,362 @@
+/* The window manager: the sliding stage, window frames and their chrome. */
+
+/*
+ * Window shadows: a contact line, a near shadow that gives the edge, and a
+ * wide soft one for height. The front window stands clearly higher.
+ */
+:root,
+[data-theme='light'] {
+  --wm-shadow: 0 1px 2px rgb(60 48 30 / 0.1), 0 6px 16px rgb(60 48 30 / 0.1), 0 16px 36px rgb(60 48 30 / 0.08);
+  --wm-shadow-front: 0 1px 3px rgb(60 48 30 / 0.14), 0 12px 28px rgb(60 48 30 / 0.17), 0 36px 84px rgb(60 48 30 / 0.24);
+}
+
+[data-theme='dark'] {
+  --wm-shadow: 0 1px 2px rgb(0 0 0 / 0.4), 0 6px 18px rgb(0 0 0 / 0.32), 0 18px 40px rgb(0 0 0 / 0.3);
+  --wm-shadow-front: 0 1px 3px rgb(0 0 0 / 0.55), 0 12px 28px rgb(0 0 0 / 0.46), 0 36px 84px rgb(0 0 0 / 0.56);
+}
+
+.wm-stage {
+  position: absolute;
+  inset: 0;
+}
+
+/*
+ * The frame is the window's rectangle. Its transform, width and height are
+ * written by FrameController, never by a stylesheet or by React.
+ */
+.wm-frame {
+  position: absolute;
+  top: 0;
+  /* Each desktop is one screen further along the stage. */
+  left: calc(var(--desk, 0) * 100%);
+  pointer-events: auto;
+  contain: layout style;
+}
+
+.wm-frame[data-gesture='move'],
+.wm-frame[data-moving] {
+  /* Promoted to its own layer only while it travels. */
+  will-change: transform;
+}
+
+.wm-frame[data-offstage],
+.wm-frame[data-parked] {
+  visibility: hidden;
+}
+
+.wm-frame[data-mode='minimized'],
+.wm-frame[data-closing] {
+  pointer-events: none;
+}
+
+.window {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  /* The hairline is a ring in the shadow, so the content is exactly the window's rectangle. */
+  box-shadow:
+    0 0 0 1px var(--hairline-strong),
+    var(--wm-shadow);
+  transition: box-shadow var(--t-base) var(--ease-out);
+}
+
+.wm-frame[data-focused] .window {
+  box-shadow:
+    0 0 0 1px var(--hairline-strong),
+    var(--wm-shadow-front);
+}
+
+.wm-frame[data-mode='fullscreen'] .window {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* ---------------------------------------------------------------- title bar */
+
+.window__bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--s-2);
+  height: 38px;
+  padding: 0 7px 0 11px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface-sunken);
+  color: var(--ink-muted);
+  transition:
+    background-color var(--t-base) var(--ease-out),
+    color var(--t-base) var(--ease-out);
+}
+
+.wm-frame[data-focused] .window__bar {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.window__bar .app-icon {
+  filter: saturate(0.5);
+  opacity: 0.7;
+  transition:
+    filter var(--t-base) var(--ease-out),
+    opacity var(--t-base) var(--ease-out);
+}
+
+.wm-frame[data-focused] .window__bar .app-icon {
+  filter: none;
+  opacity: 1;
+}
+
+.window__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: 38px;
+  letter-spacing: 0.005em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The window's size, read out like a dimension on a drawing while it is resized. */
+.window__size {
+  display: none;
+  flex: none;
+  padding: 0 var(--s-1);
+  color: var(--accent-ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+
+.wm-frame[data-gesture='resize'] .window__size {
+  display: block;
+}
+
+/* Three drawn keys in one capsule with the clipped corner. Quiet until the pointer comes near. */
+.window__controls {
+  --chamfer: 7px;
+  display: flex;
+  flex: none;
+  padding: 2px;
+  border-radius: var(--r-sm);
+  background: var(--hover);
+  clip-path: var(--clip-chamfer);
+  color: var(--ink-faint);
+  transition: color var(--t-fast) var(--ease-out);
+}
+
+.wm-frame[data-focused] .window__controls {
+  color: var(--ink-muted);
+}
+
+.window__controls:hover {
+  color: var(--ink);
+}
+
+.window__key {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 20px;
+  border-radius: var(--r-xs);
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+}
+
+.window__key:hover {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.window__key:active {
+  background: var(--selected);
+}
+
+.window__key--close:hover {
+  background: var(--accent-fill);
+  color: var(--on-accent);
+}
+
+.window__key:focus-visible {
+  outline-offset: -2px;
+}
+
+/* ---------------------------------------------------------------- content */
+
+.window__body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: var(--surface);
+}
+
+.window__app {
+  height: 100%;
+}
+
+/* Unfocused windows step back a little without losing legibility. */
+.wm-frame:not([data-focused]) .window__app {
+  opacity: 0.94;
+}
+
+.window__shield {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+
+[data-wm-gesture] .window__shield {
+  display: block;
+}
+
+.window__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-6);
+  /* Hidden for the first moments: most apps load before it would show. */
+  animation: window-skeleton-in var(--t-slow) var(--ease-out) 220ms both;
+}
+
+.window__skeleton span {
+  height: 10px;
+  border-radius: var(--r-full);
+  background: var(--hairline);
+}
+
+.window__skeleton span:nth-child(1) {
+  width: 38%;
+}
+.window__skeleton span:nth-child(2) {
+  width: 64%;
+}
+.window__skeleton span:nth-child(3) {
+  width: 51%;
+}
+
+@keyframes window-skeleton-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.window__failure {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--s-2);
+  height: 100%;
+  max-width: 46ch;
+  margin: 0 auto;
+  padding: var(--s-8);
+}
+
+.window__failure-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+}
+
+.window__failure-text {
+  color: var(--ink-muted);
+}
+
+.window__failure-action {
+  height: 30px;
+  margin-top: var(--s-3);
+  padding: 0 var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--accent-fill);
+  color: var(--on-accent);
+  font-weight: var(--weight-medium);
+}
+
+.window__failure-action:hover {
+  background: var(--accent-hover);
+}
+
+/* ---------------------------------------------------------------- resize handles */
+
+/* Invisible, and generous: each straddles the window's edge. */
+.wm-handle {
+  --edge: 6px;
+  --corner: 16px;
+  position: absolute;
+  touch-action: none;
+}
+
+.wm-handle[data-resize='n'],
+.wm-handle[data-resize='s'] {
+  right: var(--corner);
+  left: var(--corner);
+  height: calc(var(--edge) * 2);
+  cursor: ns-resize;
+}
+.wm-handle[data-resize='n'] {
+  top: calc(var(--edge) * -1);
+}
+.wm-handle[data-resize='s'] {
+  bottom: calc(var(--edge) * -1);
+}
+
+.wm-handle[data-resize='e'],
+.wm-handle[data-resize='w'] {
+  top: var(--corner);
+  bottom: var(--corner);
+  width: calc(var(--edge) * 2);
+  cursor: ew-resize;
+}
+.wm-handle[data-resize='e'] {
+  right: calc(var(--edge) * -1);
+}
+.wm-handle[data-resize='w'] {
+  left: calc(var(--edge) * -1);
+}
+
+.wm-handle[data-resize='ne'],
+.wm-handle[data-resize='nw'],
+.wm-handle[data-resize='se'],
+.wm-handle[data-resize='sw'] {
+  width: calc(var(--corner) + var(--edge));
+  height: calc(var(--corner) + var(--edge));
+}
+.wm-handle[data-resize='ne'] {
+  top: calc(var(--edge) * -1);
+  right: calc(var(--edge) * -1);
+  cursor: nesw-resize;
+}
+.wm-handle[data-resize='nw'] {
+  top: calc(var(--edge) * -1);
+  left: calc(var(--edge) * -1);
+  cursor: nwse-resize;
+}
+.wm-handle[data-resize='se'] {
+  right: calc(var(--edge) * -1);
+  bottom: calc(var(--edge) * -1);
+  cursor: nwse-resize;
+}
+.wm-handle[data-resize='sw'] {
+  bottom: calc(var(--edge) * -1);
+  left: calc(var(--edge) * -1);
+  cursor: nesw-resize;
+}
+
+/* ---------------------------------------------------------------- gestures */
+
+/* One cursor everywhere and no text selection for as long as a window is held. */
+[data-wm-gesture],
+[data-wm-gesture] * {
+  cursor: var(--wm-gesture-cursor, default) !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}

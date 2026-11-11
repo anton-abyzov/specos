@@ -5,6 +5,16 @@
   z-index: var(--z-dock);
   transform: translateX(-50%);
   padding: 9px 9px 13px;
+  transition: transform var(--t-slow) var(--ease-out);
+}
+
+/*
+ * A full screen window is in front: the dock drops below the edge, leaving a
+ * sliver to aim at. Pointing at the sliver, or reaching it by keyboard, brings
+ * it back.
+ */
+.dock[data-tucked]:not(:hover, :focus-within) {
+  transform: translate(-50%, calc(100% + var(--dock-bottom) - 6px));
 }
 
 .dock__shelf {
