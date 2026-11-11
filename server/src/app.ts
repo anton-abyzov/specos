@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import Fastify, { type FastifyInstance } from 'fastify';
 import fastifyStatic from '@fastify/static';
+import { registerAuth } from './auth';
 import { loadConfig, type Config } from './config';
 import { EventBus, type Ctx } from './context';
 
@@ -32,6 +33,7 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<SpecOS>
   const app = Fastify({ logger: false, bodyLimit: 32 * 1024 * 1024 });
 
   // --- modules register here, access control first ---
+  registerAuth(app, ctx);
 
   app.get('/api/health', async () => ({ ok: true }));
 
