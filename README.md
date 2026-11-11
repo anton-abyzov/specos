@@ -1,0 +1,26 @@
+# spec-os
+
+A [SpecWeave](https://spec-weave.com) project: work happens in increments under `.specweave/increments/NNNN-slug/`, each one `spec.md` (Problem, Scope, acceptance criteria, Approach, Tasks) plus an append-only `ledger.jsonl` that records who claimed and finished what.
+
+## Working on this project
+
+| Step | Command |
+|---|---|
+| Start or continue | `specweave pickup` |
+| Plan a feature | `specweave create-increment "title"` (skill: `sw-increment`) |
+| Work the tasks | `specweave task next` → implement and commit → `specweave task done T-NN --run "<test cmd>"` |
+| Verify and close | `specweave verify`, then `specweave complete NNNN` |
+| Switch tool or account | `specweave handoff`, then say "pick up" in the other tool |
+
+Agent instructions live in `AGENTS.md` (every tool; `CLAUDE.md` imports it). The skills are in `.agents/skills/` and `.claude/skills/`.
+
+## Structure
+
+```
+.specweave/
+  increments/NNNN-slug/   spec.md · ledger.jsonl · handoff.md · reports/
+  memory/                 MEMORY.md index + one file per durable fact
+  config.json
+```
+
+Docs: https://spec-weave.com · Source: https://github.com/anton-abyzov/specweave
