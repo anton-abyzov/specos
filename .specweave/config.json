@@ -1,0 +1,35 @@
+{
+  "version": "2.0",
+  "project": {
+    "name": "specos",
+    "version": "0.1.0"
+  },
+  "adapters": {
+    "default": "claude"
+  },
+  "repository": {
+    "provider": "local"
+  },
+  "testing": {
+    "commands": []
+  },
+  "limits": {
+    "activeIncrements": 3
+  },
+  "planning": {
+    "deepInterview": "critical"
+  },
+  "auto": {
+    "maxTurns": 20,
+    "maxSessionAge": 7200,
+    "requireTests": false
+  },
+  "livingDocs": false,
+  "lsp": {
+    "enabled": true
+  },
+  "workspace": {
+    "name": "specos",
+    "repos": []
+  }
+}

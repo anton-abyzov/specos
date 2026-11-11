@@ -1,0 +1,8 @@
+{
+  "skill": "grill-me",
+  "files": {
+    "agents/openai.yaml": "72ceddd4640b0a42822a14140193bedf3a307c482cdcc20a6b7cd62d534cfb3d",
+    "references/credits.md": "fa07862861379987c858aee4488ce70cbfd1b76808f010d282a3322ee93293c3",
+    "SKILL.md": "8f959dbcd824e6e26185dc0e86a522394dd30bc444458a79def6cd6b7f5fc93a"
+  }
+}
