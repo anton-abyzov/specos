@@ -14,6 +14,13 @@ import type { ApiError } from '../../shared/protocol';
  * new below one.
  */
 
+/**
+ * Prefix of the short-lived files the server itself puts in home (the temp
+ * file of an atomic write, the reflink probe). They are plumbing, so the
+ * watcher and the index leave them out.
+ */
+export const SCRATCH_PREFIX = '.specos-';
+
 export type PathErrorCode = 'path_escape' | 'bad_path';
 
 const STATUS: Record<PathErrorCode, 400 | 403> = { bad_path: 400, path_escape: 403 };

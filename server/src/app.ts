@@ -4,6 +4,7 @@ import fastifyStatic from '@fastify/static';
 import { registerAuth } from './auth';
 import { loadConfig, type Config } from './config';
 import { EventBus, type Ctx } from './context';
+import { registerFsApi } from './fs-api';
 import { registerSystem } from './system';
 import { registerWs } from './ws';
 
@@ -38,6 +39,7 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<SpecOS>
   registerAuth(app, ctx);
   registerWs(app, ctx);
   registerSystem(app, ctx);
+  await registerFsApi(app, ctx);
 
   app.get('/api/health', async () => ({ ok: true }));
 
