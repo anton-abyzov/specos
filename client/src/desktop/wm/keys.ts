@@ -3,7 +3,7 @@
  * for themselves in a normal tab (Ctrl+W, Ctrl+1 to 4), so every desktop
  * shortcut also works with Alt held.
  */
-import { DESKTOP_COUNT } from '../../stores/shell';
+import { DESKTOP_COUNT, useShellStore } from '../../stores/shell';
 import { focusedWindow, useWindowsStore } from './store';
 
 const DIGIT = /^Digit([1-9])$/;
@@ -75,6 +75,8 @@ function shortcut(event: KeyboardEvent): boolean {
 export function bindKeys(): () => void {
   // Capture phase: the shortcuts work even while an app holds the keyboard focus.
   const onKeyDown = (event: KeyboardEvent) => {
+    // The launcher owns the keyboard while it is open.
+    if (useShellStore.getState().launcherOpen) return;
     if (event.defaultPrevented || !shortcut(event)) return;
     event.preventDefault();
     event.stopPropagation();
@@ -82,6 +84,7 @@ export function bindKeys(): () => void {
   // Escape is different: menus, fields and terminals use it first, so it is heard last.
   const onEscape = (event: KeyboardEvent) => {
     if (event.key !== 'Escape' || event.defaultPrevented || typingTarget(event)) return;
+    if (useShellStore.getState().launcherOpen) return;
     const state = useWindowsStore.getState();
     const focused = focusedWindow(state);
     if (!state.overviewOpen && focused?.mode === 'fullscreen') state.toggleFullscreen(focused.id);

@@ -3,6 +3,7 @@ import { APPS, type Menu } from '../apps/registry';
 import { setTheme } from '../lib/theme';
 import { useShellStore } from '../stores/shell';
 import { useTheme } from '../stores/theme';
+import { LauncherButton } from './launcher/LauncherButton';
 import { MenuStrip, type StripMenu } from './menubar/MenuStrip';
 import { SpecOSMark } from './menubar/SpecOSMark';
 import {
@@ -97,6 +98,7 @@ export function MenuBar() {
       <MenuStrip lead={lead} title={activeAppId ? APPS[activeAppId].name : 'Desktop'} menus={menus} />
       <div className="menubar__status">
         <ConnectionNotice />
+        <LauncherButton />
         <TilingToggle />
         <DesktopSwitcher />
         <AgentsPill />

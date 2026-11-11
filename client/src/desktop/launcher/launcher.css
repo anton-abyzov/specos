@@ -1,0 +1,418 @@
+/*
+ * The Launcher: a sheet of tracing paper laid over the whole desk. One field
+ * on a drafting rule in the upper third, results below it. Nothing here has a
+ * panel of its own; the selection is the only raised surface.
+ */
+
+.launcher {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-launcher);
+  display: flex;
+  justify-content: center;
+  color: var(--ink);
+}
+
+.launcher[data-leaving] {
+  pointer-events: none;
+}
+
+.launcher__backdrop {
+  position: absolute;
+  inset: 0;
+  /* Paper over the desk: the wallpaper, windows, menu bar and dock blur into it. */
+  background: color-mix(in oklch, var(--paper) 76%, transparent);
+  backdrop-filter: blur(34px) saturate(1.25);
+}
+
+.launcher__column {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(880px, 100vw - 64px);
+  height: 100%;
+  padding-top: clamp(72px, 15vh, 168px);
+}
+
+/* ---------------------------------------------------------------- field */
+
+.launcher__field {
+  flex: none;
+}
+
+.launcher__entry {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  height: 68px;
+}
+
+.launcher__lead {
+  flex: none;
+  color: var(--ink-muted);
+}
+
+.launcher__prefix,
+.launcher__input {
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 560;
+  line-height: 1;
+  letter-spacing: -0.028em;
+}
+
+.launcher__prefix {
+  flex: none;
+  /* The gap belongs between the glyph and the path, not inside the path. */
+  margin-right: calc(var(--s-4) * -1 + 2px);
+  color: var(--ink-faint);
+}
+
+.launcher__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  caret-color: var(--accent);
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+.launcher__input::placeholder {
+  color: var(--ink-faint);
+  opacity: 1;
+}
+
+.launcher__input:focus-visible {
+  outline: none;
+}
+
+/* The rule the field is written on: an inked edge with fine and coarse ticks, like the scale of a drawing. */
+.launcher__ruler {
+  height: 10px;
+  border-top: 1.5px solid var(--ink);
+  background:
+    repeating-linear-gradient(to right, var(--ink-faint) 0 1px, transparent 1px 40px) 0 0 / 100% 9px no-repeat,
+    repeating-linear-gradient(to right, var(--hairline-strong) 0 1px, transparent 1px 8px) 0 0 / 100% 4px no-repeat;
+}
+
+.launcher__field[data-naming] .launcher__ruler {
+  border-top-color: var(--accent);
+}
+
+.launcher__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  height: 20px;
+  margin-top: var(--s-2);
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  word-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.launcher__hints {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.launcher__hints .launcher-key:not(:first-child) {
+  margin-left: var(--s-3);
+}
+
+.launcher__status {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.launcher-key {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 5px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-xs);
+  background: color-mix(in oklch, var(--surface) 55%, transparent);
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- results */
+
+.launcher__results {
+  flex: 1;
+  min-height: 0;
+  /* Room on both sides for the selection's shadow and for a scrollbar gutter (10px each side), so rows line up with the rule above and never move. */
+  margin: 6px -30px 0;
+  padding: 14px 20px var(--s-12);
+  overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
+  scroll-padding: var(--s-10) 0 var(--s-12);
+  /* Rows leave under the field and above the screen's edge by fading, not by being cut. */
+  mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 40px), transparent 100%);
+}
+
+.launcher__section + .launcher__section {
+  margin-top: var(--s-4);
+}
+
+.launcher__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 30px;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+}
+
+.launcher__heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  margin-left: var(--s-1);
+  background: var(--hairline);
+}
+
+.launcher__count {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.launcher__items--grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--s-1);
+  padding-top: var(--s-2);
+}
+
+.launcher__items--chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  padding-top: var(--s-1);
+}
+
+/* Actions offered before a query sit two abreast: nothing ranks them, and the page stays short. */
+.launcher__items[data-columns='2'] {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: var(--s-3);
+}
+
+.launcher__note {
+  padding: var(--s-2) 0;
+  color: var(--ink-muted);
+  font-size: var(--text-lg);
+  line-height: var(--leading-body);
+}
+
+.launcher__note[data-problem] {
+  color: var(--danger);
+}
+
+.launcher__note q {
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------- one result */
+
+.launcher-item {
+  --chamfer: 10px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.launcher-item__plate {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  filter: drop-shadow(0 0 0.75px var(--ink-faint)) drop-shadow(0 3px 8px rgb(0 0 0 / 0.1));
+}
+
+.launcher-item[data-selected] .launcher-item__plate {
+  opacity: 1;
+}
+
+.launcher-item__sheet {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-md);
+  background: var(--surface-raised);
+  clip-path: var(--clip-chamfer);
+}
+
+.launcher-item__icon,
+.launcher-item__text,
+.launcher-item__aside {
+  position: relative;
+}
+
+.launcher-item__icon {
+  flex: none;
+}
+
+.launcher-item__glyph {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--hairline);
+  border-radius: 7px;
+  background: color-mix(in oklch, var(--surface) 60%, transparent);
+  color: var(--ink-soft);
+}
+
+.launcher-item[data-selected] .launcher-item__glyph {
+  border-color: var(--hairline-strong);
+  color: var(--ink);
+}
+
+.launcher-item__text {
+  min-width: 0;
+}
+
+.launcher-item__title,
+.launcher-item__detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.launcher-item__title {
+  color: var(--ink);
+}
+
+.launcher-item__detail {
+  color: var(--ink-muted);
+  word-spacing: 0.06em;
+}
+
+.launcher-item mark {
+  background: none;
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklch, var(--accent) 60%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+/* A line: icon, title, the quieter detail on the same baseline, and an aside at the right. */
+.launcher-item--list {
+  gap: var(--s-3);
+  height: 46px;
+  padding: 0 14px 0 10px;
+}
+
+.launcher-item--list .launcher-item__text {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  gap: var(--s-3);
+}
+
+.launcher-item--list .launcher-item__title {
+  flex: 0 1 auto;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+}
+
+.launcher-item--list .launcher-item__detail {
+  flex: 1 1 0;
+  font-size: var(--text-sm);
+}
+
+/* A folder path is a technical fact. */
+.launcher-item__detail[data-kind='file'] {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+.launcher-item__aside {
+  display: flex;
+  flex: none;
+  align-items: center;
+}
+
+.launcher-item__status {
+  padding: 2px 7px;
+  border-radius: var(--r-xs);
+  background: var(--agent-soft);
+  color: var(--agent-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1.3;
+}
+
+/* A tile of the app grid: the icon large, its name in the display face. */
+.launcher-item--grid {
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: 18px var(--s-1) 14px;
+}
+
+.launcher-item--grid .launcher-item__text {
+  max-width: 100%;
+}
+
+.launcher-item--grid .launcher-item__title {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 15.5px;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  line-height: var(--leading-tight);
+}
+
+.launcher-item--grid .launcher-item__icon {
+  filter: drop-shadow(0 2px 3px rgb(40 30 15 / 0.16)) drop-shadow(0 8px 14px rgb(40 30 15 / 0.14));
+}
+
+/* A chip: an agent at work, its icon, its name and what it was asked. */
+.launcher-item--chips {
+  gap: 10px;
+  max-width: 380px;
+  padding: var(--s-2) var(--s-4) var(--s-2) var(--s-2);
+}
+
+.launcher-item--chips .launcher-item__text {
+  display: flex;
+  flex-direction: column;
+  line-height: var(--leading-snug);
+}
+
+.launcher-item--chips .launcher-item__title {
+  font-family: var(--font-display);
+  font-size: 14.5px;
+  font-weight: 560;
+}
+
+.launcher-item--chips .launcher-item__detail {
+  font-size: var(--text-sm);
+}
+
+/* ---------------------------------------------------------------- menu bar button */
+
+.launcher-button {
+  color: var(--ink-soft);
+}
+
+.launcher-button__keys {
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
