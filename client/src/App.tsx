@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
+import { Desktop } from './desktop/Desktop';
 import { setTheme } from './lib/theme';
 
 export function App() {
   useEffect(() => {
-    // Test and screenshot hook. Later tasks add openApp and the stores.
+    // Test and screenshot hook.
     window.__specos = { ...(window.__specos ?? {}), setTheme };
   }, []);
-  return <main data-testid="desktop">SpecOS</main>;
+  return <Desktop />;
 }

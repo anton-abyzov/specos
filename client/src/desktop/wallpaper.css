@@ -1,0 +1,48 @@
+.wallpaper {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-wallpaper);
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 70% at 16% 22%, var(--wall-wash-a), transparent 70%),
+    radial-gradient(55% 65% at 80% 72%, var(--wall-wash-b), transparent 72%),
+    radial-gradient(40% 45% at 62% 6%, var(--wall-wash-c), transparent 70%),
+    var(--wall-base);
+  /* Its own layer: windows dragged above never repaint it. */
+  contain: strict;
+  transform: translateZ(0);
+}
+
+.wallpaper__map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.wallpaper__contour {
+  stroke: var(--wall-contour);
+  stroke-width: 1;
+  stroke-linecap: round;
+  /* Lines stay one pixel wide however large the screen is. */
+  vector-effect: non-scaling-stroke;
+}
+
+.wallpaper__contour--major {
+  stroke: var(--wall-contour-major);
+  stroke-width: 1.25;
+}
+
+.wallpaper__summit path {
+  stroke: var(--wall-mark);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.wallpaper__summit text {
+  fill: var(--wall-mark);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+}

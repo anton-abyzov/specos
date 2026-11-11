@@ -1,0 +1,33 @@
+.app-icon {
+  /* The running ring is drawn outside the 64 unit box. */
+  overflow: visible;
+  flex: none;
+}
+
+.app-icon__ring {
+  fill: none;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: app-icon-ring 2.2s var(--ease-out) infinite;
+}
+
+@keyframes app-icon-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  70%,
+  100% {
+    transform: scale(1.24);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No pulse: a steady ring still says "running". */
+  .app-icon__ring {
+    animation: none;
+    transform: scale(1.1);
+    opacity: 0.6;
+  }
+}

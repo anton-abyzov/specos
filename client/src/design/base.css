@@ -1,0 +1,174 @@
+/* Reset, bundled fonts and the few global behaviours every surface shares. */
+
+@import '@fontsource-variable/bricolage-grotesque/wght.css';
+@import '@fontsource-variable/instrument-sans/wght.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  background: var(--paper);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  /* The desktop owns the viewport: the page itself never scrolls or bounces. */
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  font-weight: var(--weight-regular);
+  line-height: var(--leading-body);
+  font-synthesis: none;
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Chrome that is clicked a lot should not select by accident. Apps opt back in. */
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+  padding: 0;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: default;
+}
+
+a {
+  color: var(--accent-ink);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+img,
+svg {
+  display: block;
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--font-mono);
+  font-size: 0.94em;
+}
+
+::selection {
+  background: var(--selection);
+  color: var(--ink);
+}
+
+/* One focus ring everywhere, only for keyboard users. */
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* Scrollbars: a thin ink thumb that sits on the surface, no track. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-strong) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--r-full);
+  background: var(--hairline-strong);
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-faint);
+  background-clip: content-box;
+}
+
+/* Small helpers shared by the shell and the apps. */
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
+}
+.font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: 'zero' 1;
+}
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+.selectable {
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: auto;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
