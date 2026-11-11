@@ -37,14 +37,19 @@ export class GitError extends Error {
     readonly args: readonly string[],
     readonly stderr: string,
     readonly exitCode: number | undefined,
+    /** What the command printed before it failed. Some commands answer through their exit code and still print. */
+    readonly stdout = '',
   ) {
     super(`git ${subcommandOf(args)} failed: ${stderr.trim() || 'no output'}`);
     this.name = 'GitError';
   }
 }
 
-/** Runs `git <args>` in a folder and resolves with its stdout, trailing newline removed. */
-export function git(cwd: string, args: readonly string[]): Promise<string> {
+/**
+ * Runs `git <args>` in a folder and resolves with its stdout, trailing newline removed.
+ * `env` adds to the environment, for example GIT_INDEX_FILE to work in an index of one's own.
+ */
+export function git(cwd: string, args: readonly string[], env: Readonly<Record<string, string>> = {}): Promise<string> {
   return new Promise((resolve, reject) => {
     execFile(
       'git',
@@ -59,11 +64,12 @@ export function git(cwd: string, args: readonly string[]): Promise<string> {
           // Git looks for a repository in the folder and no higher. The home folder may itself sit inside
           // someone's repository, and a command meant for a project must never land there.
           GIT_CEILING_DIRECTORIES: path.dirname(cwd),
+          ...env,
         },
       },
       (error, stdout, stderr) => {
         if (!error) return resolve(stdout.replace(/\n$/, ''));
-        reject(new GitError(args, stderr || error.message, typeof error.code === 'number' ? error.code : undefined));
+        reject(new GitError(args, stderr || error.message, typeof error.code === 'number' ? error.code : undefined, stdout));
       },
     );
   });

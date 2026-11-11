@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type {
   ApiError,
   BenchmarkRequest,
@@ -64,6 +64,11 @@ export interface WorkspacesService {
   update(id: string, changes: WorkspaceChanges): Workspace | undefined;
   /** How this machine clones, and why. */
   strategy(): Promise<CloneStrategyInfo>;
+  /**
+   * Runs a task while no workspace is being created or removed and no other such task runs. For work that
+   * commits in a project or a workspace, such as a merge.
+   */
+  exclusive<T>(task: () => Promise<T>): Promise<T>;
 }
 
 /** A refusal with its HTTP status, turned into an ApiError by the routes below. */
@@ -79,6 +84,34 @@ export class WorkspaceError extends Error {
 }
 
 const badRequest = (message: string): WorkspaceError => new WorkspaceError(400, 'bad_request', message);
+
+/**
+ * The error format of the workspace routes, for a Fastify scope: refusals keep their status and code, anything
+ * else is logged and answered as 500 without its text, because a failed git or cp quotes absolute paths.
+ */
+export function refusalHandler(operation: string) {
+  return (error: unknown, _request: FastifyRequest, reply: FastifyReply): FastifyReply => {
+    const refused = pathErrorResponse(error);
+    if (refused) return reply.code(refused.status).send(refused.body);
+    if (error instanceof WorkspaceError) {
+      return reply.code(error.status).send({ error: error.message, code: error.code } satisfies ApiError);
+    }
+    const { statusCode, message } = error as { statusCode?: number; message: string };
+    // Fastify's own refusals (malformed JSON, a body too large) are written for clients.
+    if (statusCode !== undefined && statusCode >= 400 && statusCode < 500) {
+      return reply.code(statusCode).send({ error: message, code: 'bad_request' } satisfies ApiError);
+    }
+    console.error(`SpecOS ${operation} failed: ${message}`);
+    return reply.code(500).send({ error: `The ${operation} failed`, code: 'internal' } satisfies ApiError);
+  };
+}
+
+/** A JSON request body as an object with unchecked fields. A missing body is an empty object. */
+export function bodyOf<T>(body: unknown): Partial<Record<keyof T, unknown>> {
+  if (body === undefined || body === null) return {};
+  if (typeof body !== 'object' || Array.isArray(body)) throw badRequest('The request needs a JSON object as its body');
+  return body as Partial<Record<keyof T, unknown>>;
+}
 
 // ---------------------------------------------------------------- names
 
@@ -395,6 +428,7 @@ export async function registerWorkspaces(app: FastifyInstance, ctx: Ctx): Promis
     setAgent: (id, agentId) => change(id, { agentId }),
     update: change,
     strategy: () => detectCloneStrategy(home),
+    exclusive,
   };
   ctx.workspaces = service;
   // Who made a change is the agents module's to say; which workspace it happened in is known here.
@@ -451,28 +485,7 @@ export async function registerWorkspaces(app: FastifyInstance, ctx: Ctx): Promis
 
   // --- routes, in a scope of their own so the error format applies to them only ---
   await app.register(async (api) => {
-    api.setErrorHandler((error, _request, reply) => {
-      const refused = pathErrorResponse(error);
-      if (refused) return reply.code(refused.status).send(refused.body);
-      if (error instanceof WorkspaceError) {
-        return reply.code(error.status).send({ error: error.message, code: error.code } satisfies ApiError);
-      }
-      const { statusCode, message } = error as { statusCode?: number; message: string };
-      // Fastify's own refusals (malformed JSON, a body too large) are written for clients.
-      if (statusCode !== undefined && statusCode >= 400 && statusCode < 500) {
-        return reply.code(statusCode).send({ error: message, code: 'bad_request' } satisfies ApiError);
-      }
-      // A failed git or cp quotes absolute paths; the client only learns that it failed.
-      console.error(`SpecOS workspace operation failed: ${message}`);
-      return reply.code(500).send({ error: 'The workspace operation failed', code: 'internal' } satisfies ApiError);
-    });
-
-    /** The JSON body as an object with unchecked fields. A missing body is an empty object. */
-    const bodyOf = <T>(body: unknown): Partial<Record<keyof T, unknown>> => {
-      if (body === undefined || body === null) return {};
-      if (typeof body !== 'object' || Array.isArray(body)) throw badRequest('The request needs a JSON object as its body');
-      return body as Partial<Record<keyof T, unknown>>;
-    };
+    api.setErrorHandler(refusalHandler('workspace operation'));
 
     api.get('/api/projects', async (): Promise<ProjectsResponse> => {
       const children = await fsp.readdir(path.join(home, PROJECTS), { withFileTypes: true });
