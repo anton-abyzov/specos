@@ -1,11 +1,13 @@
 import fs from 'node:fs';
 import Fastify, { type FastifyInstance } from 'fastify';
 import fastifyStatic from '@fastify/static';
+import { registerActivity } from './activity';
 import { registerAuth } from './auth';
 import { loadConfig, type Config } from './config';
 import { EventBus, type Ctx } from './context';
 import { registerFsApi } from './fs-api';
 import { registerSystem } from './system';
+import { registerWatch } from './watch';
 import { registerWs } from './ws';
 
 export interface SpecOS {
@@ -40,6 +42,8 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<SpecOS>
   registerWs(app, ctx);
   registerSystem(app, ctx);
   await registerFsApi(app, ctx);
+  registerActivity(app, ctx);
+  await registerWatch(app, ctx);
 
   app.get('/api/health', async () => ({ ok: true }));
 

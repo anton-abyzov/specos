@@ -1,4 +1,5 @@
 import type { ServerEvent } from '../../shared/protocol';
+import type { ActivityService } from './activity';
 import type { Config } from './config';
 import type { SocketRegistry } from './ws';
 
@@ -35,4 +36,6 @@ export interface Ctx {
   /** Guarded WebSocket paths and the events socket, from ws.ts. */
   sockets?: SocketRegistry;
   agents?: AgentsService;
+  /** The journal of file changes, from activity.ts. */
+  activity?: ActivityService;
 }
