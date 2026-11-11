@@ -71,8 +71,8 @@ test('the clone strategy is probed in the home folder and explains itself', asyn
   // One honest sentence that names the file system.
   expect(clone.reason).toContain(info.fs.type);
   expect(clone.reason).not.toMatch(/[.\n]/);
-  // The probe cleans up after itself.
-  expect(fs.readdirSync(server.home)).toEqual([]);
+  // The probe cleans up after itself. Projects/ and Workspaces/ are made at start and belong there.
+  expect(fs.readdirSync(server.home).filter((name) => name.startsWith('.specos-'))).toEqual([]);
 });
 
 test('the demo setting forces the demo runner without looking for claude', async () => {

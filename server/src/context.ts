@@ -1,6 +1,7 @@
 import type { ServerEvent } from '../../shared/protocol';
 import type { ActivityService } from './activity';
 import type { Config } from './config';
+import type { WorkspacesService } from './workspaces';
 import type { SocketRegistry } from './ws';
 
 type Listener = (event: ServerEvent) => void;
@@ -38,4 +39,6 @@ export interface Ctx {
   agents?: AgentsService;
   /** The journal of file changes, from activity.ts. */
   activity?: ActivityService;
+  /** Projects, their clones and the registry of them, from workspaces.ts. */
+  workspaces?: WorkspacesService;
 }

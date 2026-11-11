@@ -9,6 +9,7 @@ import { registerFsApi } from './fs-api';
 import { registerPty } from './pty';
 import { registerSystem } from './system';
 import { registerWatch } from './watch';
+import { registerWorkspaces } from './workspaces';
 import { registerWs } from './ws';
 
 export interface SpecOS {
@@ -44,6 +45,8 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<SpecOS>
   registerSystem(app, ctx);
   await registerFsApi(app, ctx);
   registerActivity(app, ctx);
+  // Before the watcher, so the folders it makes at start are not journalled as someone's change.
+  await registerWorkspaces(app, ctx);
   await registerWatch(app, ctx);
   registerPty(app, ctx);
 
