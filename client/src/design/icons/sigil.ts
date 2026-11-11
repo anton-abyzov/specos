@@ -9,8 +9,12 @@ export interface Sigil {
   mark: { x: number; y: number };
 }
 
-/** The 3 by 3 lattice a sigil is drawn on, inside the icon tile. */
-const LATTICE = [20, 32, 44] as const;
+/**
+ * The 3 by 3 lattice a sigil is drawn on. It sits a little low and left of the
+ * tile's centre, clear of the clipped corner.
+ */
+const COLUMNS = [20, 31, 42] as const;
+const ROWS = [23, 34, 45] as const;
 
 /** Small deterministic generator (mulberry32) so a seed always draws the same sigil. */
 function generator(seed: number): () => number {
@@ -31,7 +35,7 @@ function generator(seed: number): () => number {
  */
 export function sigilFor(seed: string): Sigil {
   const random = generator(hashSeed(seed));
-  const points = LATTICE.flatMap((y) => LATTICE.map((x) => ({ x, y })));
+  const points = ROWS.flatMap((y) => COLUMNS.map((x) => ({ x, y })));
   // Fisher-Yates with the seeded generator.
   for (let i = points.length - 1; i > 0; i -= 1) {
     const j = Math.floor(random() * (i + 1));

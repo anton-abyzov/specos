@@ -4,30 +4,30 @@
   flex: none;
 }
 
+.app-icon__halo {
+  opacity: 0.55;
+}
+
 .app-icon__ring {
-  fill: none;
   transform-box: fill-box;
   transform-origin: center;
-  animation: app-icon-ring 2.2s var(--ease-out) infinite;
+  animation: app-icon-ring 1.8s ease-out infinite;
 }
 
 @keyframes app-icon-ring {
-  0% {
-    transform: scale(1);
-    opacity: 0.85;
+  from {
+    transform: scale(1.02);
+    opacity: 0.9;
   }
-  70%,
-  100% {
-    transform: scale(1.24);
+  to {
+    transform: scale(1.26);
     opacity: 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* No pulse: a steady ring still says "running". */
+  /* No pulse: the steady halo still says "running". */
   .app-icon__ring {
-    animation: none;
-    transform: scale(1.1);
-    opacity: 0.6;
+    display: none;
   }
 }

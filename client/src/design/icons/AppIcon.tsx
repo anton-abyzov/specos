@@ -137,7 +137,13 @@ export const AgentIcon = memo(function AgentIcon({ hue, seed, running = false, s
       to={color.deep}
       className={running ? 'app-icon--running' : undefined}
       backdrop={
-        running ? <path className="app-icon__ring" d={TILE_PATH} style={{ stroke: color.ring }} strokeWidth="3" /> : null
+        running ? (
+          <g style={{ stroke: color.ring }} fill="none">
+            {/* A steady halo says "running" at any instant; the ring that leaves it adds the pulse. */}
+            <path className="app-icon__halo" d={TILE_PATH} strokeWidth="6" />
+            <path className="app-icon__ring" d={TILE_PATH} strokeWidth="3" />
+          </g>
+        ) : null
       }
     >
       <path d={sigil.path} />
