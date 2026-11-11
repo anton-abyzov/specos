@@ -34,12 +34,16 @@ Tasks in spec.md: `### T-01 Title`, then `- AC: AC-01 | Files: src/a.ts, tests/e
 
 | Action | Command |
 |---|---|
-| Build | TODO: not detected — fill in the build command |
-| Test | TODO: not detected — fill in the test command |
-| Lint | TODO: not detected — fill in the lint command |
+| Build | `npm run build` |
+| Test | `npm test` |
+| Lint | `npm run typecheck` |
 
 If a cell still says TODO, fill it in from `package.json`/`Makefile` and commit; `specweave verify` runs these rows.
 
 ## Project notes
 
-(architecture map, things agents get wrong here, recurring mistakes; keep it short)
+- `shared/protocol.ts` is the contract between server and client. Change it first, then both sides.
+- Server modules live in `server/src/`, each exports `register(app, ctx)` and is wired in `server/src/app.ts`. Server tests are vitest in `tests/server/` and use `startTestServer()` from `tests/server/helpers.ts`.
+- The client is in `client/src/`. End-to-end tests are Playwright in `tests/e2e/`, always headless, and use `login`, `shots` and `trackErrors` from `tests/e2e/helpers.ts`. Run one with `E2E_PORT=<free port> npx playwright test tests/e2e/<name>.spec.ts`.
+- Commits: `0001: what changed`, one line under 72 characters, no emoji, no AI attribution of any kind.
+- Stop only processes you started, by PID. Never `pkill` or `killall`.

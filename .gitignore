@@ -54,3 +54,7 @@ vskill.lock
 **/reports/*.mp4
 **/reports/*.png
 **/reports/*.jpg
+
+# SpecOS
+client/dist/
+.e2e/
