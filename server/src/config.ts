@@ -19,6 +19,10 @@ export interface Config {
   agent: 'auto' | 'claude' | 'demo';
   /** Extra flags for the claude runner. */
   claudeArgs: string[];
+  /** The claude executable: a name looked up on PATH, or a path. */
+  claudeCommand: string;
+  /** How many times faster than real time the demo agent works. 1 is the pace meant for watching. */
+  demoSpeed: number;
   /** Repository root. */
   root: string;
 }
@@ -34,6 +38,8 @@ export function loadConfig(overrides: Partial<Config> = {}, env: NodeJS.ProcessE
     clientDist: path.resolve(env.SPECOS_CLIENT_DIST ?? path.join(root, 'client/dist')),
     agent,
     claudeArgs: env.SPECOS_CLAUDE_ARGS ? env.SPECOS_CLAUDE_ARGS.split(' ').filter(Boolean) : [],
+    claudeCommand: env.SPECOS_CLAUDE_BIN || 'claude',
+    demoSpeed: Number(env.SPECOS_DEMO_SPEED) > 0 ? Number(env.SPECOS_DEMO_SPEED) : 1,
     root,
     ...overrides,
   };

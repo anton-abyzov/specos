@@ -104,12 +104,12 @@ async function conflictsWith(project: string, commit: string): Promise<string[]>
 
 export async function registerMerge(app: FastifyInstance, ctx: Ctx): Promise<void> {
   const { home, data } = ctx.config;
+  if (!ctx.workspaces) throw new Error('registerMerge needs the workspaces module registered first');
   const workspaces = ctx.workspaces;
-  if (!workspaces) throw new Error('registerMerge needs the workspaces module registered first');
 
   /** The workspace with this id, with its folder and its project's. Both must still be on disk. */
   async function locate(id: string): Promise<{ workspace: Workspace; folder: string; project: string }> {
-    const workspace = workspaces?.get(id);
+    const workspace = workspaces.get(id);
     if (!workspace) throw new WorkspaceError(404, 'not_found', 'There is no such workspace');
     const folder = resolveInHome(home, workspace.path);
     const project = resolveInHome(home, workspace.project);
@@ -154,8 +154,11 @@ export async function registerMerge(app: FastifyInstance, ctx: Ctx): Promise<voi
     }
   }
 
-  /** Who the journal names for the file changes of a merge. */
+  /** Who the journal names for the file changes of a merge: the workspace's agent, or the workspace itself. */
   function actorOf(workspace: Workspace): MergeActor {
+    // Asked through ctx at the time of the merge, because the agents module registers after this one.
+    const agent = workspace.agentId === undefined ? undefined : ctx.agents?.get(workspace.agentId);
+    if (agent) return { type: 'merge', agentId: agent.id, name: agent.name, hue: agent.hue };
     return { type: 'merge', agentId: workspace.agentId ?? '', name: workspace.name, hue: NEUTRAL_HUE };
   }
 
@@ -163,7 +166,7 @@ export async function registerMerge(app: FastifyInstance, ctx: Ctx): Promise<voi
     const { workspace, folder, project } = await locate(id);
     const actor = actorOf(workspace);
     const done = (status: 'merged' | 'conflict', result: MergeResult): MergeResult => {
-      workspaces?.update(workspace.id, { status });
+      workspaces.update(workspace.id, { status });
       return result;
     };
 

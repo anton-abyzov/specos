@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import Fastify, { type FastifyInstance } from 'fastify';
 import fastifyStatic from '@fastify/static';
 import { registerActivity } from './activity';
+import { registerAgents } from './agents';
 import { registerAuth } from './auth';
 import { loadConfig, type Config } from './config';
 import { EventBus, type Ctx } from './context';
@@ -51,6 +52,7 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<SpecOS>
   await registerWatch(app, ctx);
   registerPty(app, ctx);
   await registerMerge(app, ctx);
+  await registerAgents(app, ctx);
 
   app.get('/api/health', async () => ({ ok: true }));
 

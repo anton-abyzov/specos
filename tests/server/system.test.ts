@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import { afterAll, beforeAll, expect, test } from 'vitest';
 import WebSocket from 'ws';
+import type { AgentsService } from '../../server/src/agents';
 import { detectCloneStrategy, detectRunner, findMount } from '../../server/src/probe';
 import type { ServerEvent, SystemInfo, SystemStats } from '../../shared/protocol';
 import { startTestServer, type TestServer } from './helpers';
@@ -93,7 +94,7 @@ test('GET /api/system/stats returns a sample without any desktop connected', asy
 
 test('a connected desktop receives stats every tick, and the tick stops when it leaves', async () => {
   const { ctx } = server.specos;
-  ctx.agents = { runningCount: () => 2 };
+  ctx.agents = { ...(ctx.agents as AgentsService), runningCount: () => 2 };
   const seen: SystemStats[] = [];
   const stopListening = ctx.bus.on((event) => {
     if (event.type === 'stats') seen.push(event.stats);

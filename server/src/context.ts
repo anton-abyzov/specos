@@ -1,5 +1,6 @@
 import type { ServerEvent } from '../../shared/protocol';
 import type { ActivityService } from './activity';
+import type { AgentsService } from './agents';
 import type { Config } from './config';
 import type { WorkspacesService } from './workspaces';
 import type { SocketRegistry } from './ws';
@@ -20,11 +21,6 @@ export class EventBus {
   }
 }
 
-/** What the rest of the server may ask of agent jobs. The agents module widens this with its own service. */
-export interface AgentsService {
-  runningCount(): number;
-}
-
 /**
  * Shared by every server module. A module that owns a service adds it here as
  * an optional field (activity, workspaces, agents) and assigns it in register().
@@ -36,6 +32,7 @@ export interface Ctx {
   onClose(fn: () => void | Promise<void>): void;
   /** Guarded WebSocket paths and the events socket, from ws.ts. */
   sockets?: SocketRegistry;
+  /** Agent jobs and their runners, from agents.ts. */
   agents?: AgentsService;
   /** The journal of file changes, from activity.ts. */
   activity?: ActivityService;
