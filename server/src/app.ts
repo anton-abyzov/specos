@@ -6,6 +6,7 @@ import { registerAuth } from './auth';
 import { loadConfig, type Config } from './config';
 import { EventBus, type Ctx } from './context';
 import { registerFsApi } from './fs-api';
+import { registerPty } from './pty';
 import { registerSystem } from './system';
 import { registerWatch } from './watch';
 import { registerWs } from './ws';
@@ -44,6 +45,7 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<SpecOS>
   await registerFsApi(app, ctx);
   registerActivity(app, ctx);
   await registerWatch(app, ctx);
+  registerPty(app, ctx);
 
   app.get('/api/health', async () => ({ ok: true }));
 
