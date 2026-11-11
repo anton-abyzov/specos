@@ -18,6 +18,11 @@ export class EventBus {
   }
 }
 
+/** What the rest of the server may ask of agent jobs. The agents module widens this with its own service. */
+export interface AgentsService {
+  runningCount(): number;
+}
+
 /**
  * Shared by every server module. A module that owns a service adds it here as
  * an optional field (activity, workspaces, agents) and assigns it in register().
@@ -29,4 +34,5 @@ export interface Ctx {
   onClose(fn: () => void | Promise<void>): void;
   /** Guarded WebSocket paths and the events socket, from ws.ts. */
   sockets?: SocketRegistry;
+  agents?: AgentsService;
 }
