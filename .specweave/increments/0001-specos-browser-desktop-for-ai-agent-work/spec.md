@@ -63,7 +63,7 @@ Server.
 - `workspaces.ts`: projects live in `home/Projects/<name>`, workspaces in `home/Workspaces/<project>-<agent>`. A project becomes a git repository on first clone (its current state is committed as the base). Strategy is probed once: `reflink` when `cp --reflink=always` works in home (btrfs, XFS, bcachefs), then the whole repository is cloned with `cp -a --reflink=auto` and switched to branch `agent/<id>`; `worktree` otherwise on Linux (`git worktree add -b agent/<id>`); `copy` elsewhere. Each clone is timed with `process.hrtime` and reports logical bytes, file count and the free-space delta of the file system.
 - Diff is `git diff <base>` in the workspace including untracked files. Merge commits the workspace, commits the project's own pending edits as the user, then merges `agent/<id>` with `--no-ff`. On conflict the merge is aborted and the conflicting paths are returned with 409.
 - `agents.ts`: `POST /api/agents` (alias `POST /agents`) creates a workspace and starts a runner. `claude` runner: `claude -p <prompt> --output-format stream-json --verbose --include-partial-messages --permission-mode acceptEdits` with cwd set to the workspace; each JSON line is normalised into an `AgentStreamEvent`. `demo` runner: a scripted agent that streams words and appends to files on a timer. Touched files come from the watcher, so both runners report them the same way. Stop sends SIGTERM to the process group.
-- `system.ts`: `/api/system` from `os`, `/etc/os-release`, `findmnt -T home`; a 2 s stats tick on the events socket; `/api/system/benchmark` creates N workspaces from a sample project, streams each result, then removes them.
+- `system.ts`: `/api/system` from `os`, `/etc/os-release`, `findmnt -T home`; a 2 s stats tick on the events socket. `/api/system/benchmark` (in `workspaces.ts`) creates N workspaces from a sample project, streams each result, then removes them.
 
 Client.
 - State in zustand stores (windows, files cache, agents, activity, theme). The windows store persists to `localStorage`.
@@ -114,8 +114,8 @@ Risks: browsers reserve Ctrl+1 to 4 and Cmd+Space in a normal tab, so Ctrl+Alt+1
 ### T-07 Terminal over node-pty
 - AC: AC-06 | Files: server/src/pty.ts, tests/server/pty.test.ts | Test: npx vitest run tests/server/pty.test.ts
 
-### T-08 Workspaces with reflink, worktree and copy strategies
-- AC: AC-07 | Files: server/src/workspaces.ts, tests/server/workspaces.test.ts | Test: npx vitest run tests/server/workspaces.test.ts
+### T-08 Workspaces with reflink, worktree and copy strategies, and the clone benchmark
+- AC: AC-07, AC-10 | Files: server/src/workspaces.ts, tests/server/workspaces.test.ts | Test: npx vitest run tests/server/workspaces.test.ts
 
 ### T-09 Workspace diff and merge back
 - AC: AC-08 | Files: server/src/workspaces.ts, server/src/merge.ts, tests/server/merge.test.ts | Test: npx vitest run tests/server/merge.test.ts
@@ -123,8 +123,8 @@ Risks: browsers reserve Ctrl+1 to 4 and Cmd+Space in a normal tab, so Ctrl+Alt+1
 ### T-10 Agent jobs with claude and demo runners
 - AC: AC-09 | Files: server/src/agents.ts, server/src/runners/claude.ts, server/src/runners/demo.ts, tests/server/agents.test.ts | Test: npx vitest run tests/server/agents.test.ts
 
-### T-11 System info, stats tick and workspace benchmark
-- AC: AC-10 | Files: server/src/system.ts, tests/server/system.test.ts | Test: npx vitest run tests/server/system.test.ts
+### T-11 System info and stats tick
+- AC: AC-10 | Files: server/src/system.ts, server/src/probe.ts, tests/server/system.test.ts | Test: npx vitest run tests/server/system.test.ts
 
 ### T-12 Design system: tokens, type, themes, wallpaper, icons
 - AC: AC-11 | Files: client/src/design/, client/src/desktop/Wallpaper.tsx, tests/e2e/design.spec.ts | Test: npx playwright test tests/e2e/design.spec.ts

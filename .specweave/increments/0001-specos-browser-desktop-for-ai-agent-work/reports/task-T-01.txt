@@ -1,0 +1,20 @@
+$ npm run typecheck && npm run build
+# exit 0 — 2026-11-11T18:57:31.488Z
+
+
+> spec-os@0.1.0 typecheck
+> tsc -p server/tsconfig.json --noEmit && tsc -p client/tsconfig.json --noEmit
+
+
+> spec-os@0.1.0 build
+> vite build --config client/vite.config.ts
+
+vite v8.3.8 building client environment for production...
+transforming...
+✓ 16 modules transformed.
+rendering chunks...
+computing gzip size...
+client/dist/index.html                  0.74 kB │ gzip:  0.44 kB
+client/dist/assets/index-2ogJ83c7.js  219.86 kB │ gzip: 68.77 kB │ map: 1,045.82 kB
+
+✓ built in 104ms
