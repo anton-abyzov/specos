@@ -110,6 +110,8 @@
   /* Vermilion dark enough to read as text on paper (AA). */
   --accent-ink: #b5321a;
   --accent-soft: rgb(228 71 43 / 0.12);
+  /* A fill that carries --on-accent text at AA. */
+  --accent-fill: #cc3b21;
   --on-accent: #fffdf8;
 
   --success: #1f8a5b;
@@ -173,6 +175,7 @@
   --accent-hover: #ff8166;
   --accent-ink: #ff7d63;
   --accent-soft: rgb(255 106 77 / 0.16);
+  --accent-fill: #ff6a4d;
   --on-accent: #1a0d09;
 
   --success: #3fbf87;

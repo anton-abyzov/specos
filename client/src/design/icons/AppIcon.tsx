@@ -147,11 +147,11 @@ export const AgentIcon = memo(function AgentIcon({ hue, seed, running = false, s
   );
 });
 
-export type AppIconProps =
-  | { id: Exclude<AppIconId, 'agent'>; size?: number }
-  | ({ id: 'agent' } & Partial<AgentIconProps>);
+export interface AppIconProps extends Partial<AgentIconProps> {
+  id: AppIconId;
+}
 
-/** Any app's icon by id. The 'agent' icon takes hue, seed and running. */
+/** Any app's icon by id. Only the 'agent' icon uses hue, seed and running. */
 export const AppIcon = memo(function AppIcon(props: AppIconProps) {
   if (props.id === 'agent') {
     return <AgentIcon hue={props.hue ?? 200} seed={props.seed ?? 'agent'} running={props.running} size={props.size} />;

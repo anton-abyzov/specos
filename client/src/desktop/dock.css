@@ -1,0 +1,131 @@
+.dock {
+  position: absolute;
+  bottom: var(--dock-bottom);
+  left: 50%;
+  z-index: var(--z-dock);
+  transform: translateX(-50%);
+  padding: 9px 9px 13px;
+}
+
+.dock__shelf {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-2xl);
+  background: var(--glass);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  box-shadow: var(--shadow-dock), inset 0 1px 0 var(--glass-highlight);
+}
+
+.dock__row {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  height: var(--dock-icon);
+}
+
+.dock__slot {
+  position: relative;
+  flex: none;
+  height: var(--dock-icon);
+}
+
+.dock__mover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  /* Moved every frame while the pointer is over the dock. */
+  will-change: transform;
+}
+
+.dock__button {
+  flex: none;
+  width: var(--dock-icon);
+  height: var(--dock-icon);
+  /* Icons grow upward from the shelf, never down into it. */
+  transform-origin: 50% 100%;
+  border-radius: var(--r-lg);
+  will-change: transform;
+}
+
+.dock__button .app-icon {
+  filter: drop-shadow(0 1px 1px rgb(30 22 10 / 0.22)) drop-shadow(0 4px 6px rgb(30 22 10 / 0.16));
+}
+
+.dock__button:focus-visible {
+  outline-offset: 3px;
+  border-radius: var(--r-xl);
+}
+
+/* A short bar, not a dot: running. Wider and in the signal colour: in front. */
+.dock__indicator {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  width: 12px;
+  height: 3px;
+  margin-left: -6px;
+  border-radius: var(--r-full);
+  background: var(--ink-soft);
+  opacity: 0;
+  transform: scaleX(0.3);
+  transition:
+    opacity var(--t-base) var(--ease-out),
+    transform var(--t-base) var(--ease-out),
+    background-color var(--t-base) var(--ease-out);
+}
+
+.dock__indicator[data-running] {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.dock__indicator[data-active] {
+  background: var(--accent);
+  transform: scaleX(1.5);
+}
+
+.dock__tip-anchor {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  width: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.dock__tip {
+  flex: none;
+  padding: 5px 10px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-md);
+  background: var(--glass-strong);
+  backdrop-filter: var(--blur-soft);
+  -webkit-backdrop-filter: var(--blur-soft);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.dock__divider {
+  position: relative;
+  flex: none;
+  height: var(--dock-icon);
+}
+
+.dock__rule {
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  left: 50%;
+  width: 1px;
+  margin-left: -0.5px;
+  background: var(--hairline-strong);
+}

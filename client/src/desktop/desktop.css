@@ -6,3 +6,11 @@
   color: var(--ink);
   isolation: isolate;
 }
+
+.desktop__windows {
+  position: absolute;
+  inset: var(--menubar-height) 0 0 0;
+  z-index: var(--z-windows);
+  /* Empty space lets clicks through to the desktop; windows turn events back on. */
+  pointer-events: none;
+}
