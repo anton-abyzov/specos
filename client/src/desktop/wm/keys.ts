@@ -24,13 +24,12 @@ function shortcut(event: KeyboardEvent): boolean {
     state.setOverview(!state.overviewOpen);
     return true;
   }
-  if (state.overviewOpen) return false;
 
   const desktop = DIGIT.exec(code);
   if (ctrl && desktop && Number(desktop[1]) <= DESKTOP_COUNT) {
     const index = Number(desktop[1]) - 1;
     if (shift && alt) {
-      if (focused) state.moveToDesktop(focused.id, index);
+      if (focused && !state.overviewOpen) state.moveToDesktop(focused.id, index);
     } else if (!shift) {
       state.setDesktop(index);
     } else {
@@ -38,6 +37,8 @@ function shortcut(event: KeyboardEvent): boolean {
     }
     return true;
   }
+  // The overview has its own keys; window commands wait until it is closed.
+  if (state.overviewOpen) return false;
 
   if (ctrl && alt && !shift) {
     if (code === 'KeyT') {

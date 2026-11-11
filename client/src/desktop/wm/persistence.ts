@@ -50,19 +50,20 @@ function readWindow(value: unknown): WindowState | null {
   // A snapped window without its zone has nowhere to snap to: it comes back floating.
   const safeMode = mode === 'snapped' && !zone ? 'normal' : (mode as WindowMode);
   const tiled = value.tiled === true;
-  const restoreBounds = readRect(value.restoreBounds);
+  const backTo = restoreMode === 'fullscreen' || (restoreMode === 'snapped' && zone) ? (restoreMode as 'fullscreen' | 'snapped') : 'normal';
+  // Only a free-floating window has no rectangle to go back to; every other one needs it.
+  const floating = !tiled && (safeMode === 'minimized' ? backTo : safeMode) === 'normal';
   return {
     id,
     appId,
     title: typeof value.title === 'string' && value.title ? value.title : getApp(appId).name,
     params: isRecord(value.params) ? value.params : {},
     bounds,
-    restoreBounds: safeMode === 'normal' && !tiled ? null : (restoreBounds ?? bounds),
+    restoreBounds: floating ? null : (readRect(value.restoreBounds) ?? bounds),
     z: typeof value.z === 'number' && Number.isFinite(value.z) ? value.z : 0,
     desktop: value.desktop,
     mode: safeMode,
-    restoreMode:
-      restoreMode === 'fullscreen' || (restoreMode === 'snapped' && zone) ? (restoreMode as 'fullscreen' | 'snapped') : 'normal',
+    restoreMode: backTo,
     snapZone: zone,
     tiled,
     slot: typeof value.slot === 'number' && Number.isFinite(value.slot) ? value.slot : 0,

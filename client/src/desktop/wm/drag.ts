@@ -11,9 +11,11 @@ import {
   containsPoint,
   keepReachable,
   resizeRect,
+  snapRect,
   zoneAt,
   type Rect,
   type ResizeEdges,
+  type SnapZone,
 } from './geometry';
 import { holdGesture, trackPointer, type PointerPosition } from './gestures';
 import { tiledWindows, useWindowsStore } from './store';
@@ -56,6 +58,20 @@ export function beginMove(event: ReactPointerEvent<HTMLElement>, id: string, fra
     return keepReachable({ x: pointer.x - grab.x * w, y: pointer.y - MENUBAR_HEIGHT - grab.y, w, h }, view);
   };
 
+  /** What releasing the window here would do: swap with a tile, snap to a zone, or neither. */
+  const dropTarget = (pointer: PointerPosition): { rect: Rect | null; zone?: SnapZone | null; tile?: string } => {
+    const state = useWindowsStore.getState();
+    const layerY = pointer.y - MENUBAR_HEIGHT;
+    if (pressed.tiled) {
+      const under = tiledWindows(state.windows, pressed.desktop).find(
+        (other) => other.id !== id && containsPoint(other.bounds, pointer.x, layerY),
+      );
+      return { rect: under?.bounds ?? null, tile: under?.id };
+    }
+    const zone = zoneAt(pointer.x, layerY, state.viewport);
+    return { rect: zone && snapRect(zone, state.viewport), zone };
+  };
+
   trackPointer(event, {
     frame(pointer) {
       if (!releaseGesture) {
@@ -67,9 +83,7 @@ export function beginMove(event: ReactPointerEvent<HTMLElement>, id: string, fra
       }
       const elapsed = performance.now() - startedAt;
       frame.write(rectAt(pointer, easeOut(Math.min(1, elapsed / RELEASE_MS))));
-
-      const state = useWindowsStore.getState();
-      if (!pressed.tiled) state.setSnapPreview(zoneAt(pointer.x, pointer.y - MENUBAR_HEIGHT, state.viewport));
+      useWindowsStore.getState().setDropPreview(dropTarget(pointer).rect);
       // Keep drawing until the window has reached its own size, even if the pointer rests.
       return own !== null && elapsed < RELEASE_MS;
     },
@@ -80,18 +94,11 @@ export function beginMove(event: ReactPointerEvent<HTMLElement>, id: string, fra
       delete element.dataset.gesture;
 
       const state = useWindowsStore.getState();
-      const layerY = pointer.y - MENUBAR_HEIGHT;
-      if (pressed.tiled) {
-        const under = tiledWindows(state.windows, pressed.desktop).find(
-          (other) => other.id !== id && containsPoint(other.bounds, pointer.x, layerY),
-        );
-        if (under) state.swapTiles(id, under.id);
-      } else {
-        const zone = zoneAt(pointer.x, layerY, state.viewport);
-        if (zone) state.snap(id, zone, own ?? start);
-        else state.setBounds(id, rectAt(pointer, 1));
-      }
-      state.setSnapPreview(null);
+      const target = dropTarget(pointer);
+      if (target.tile) state.swapTiles(id, target.tile);
+      else if (target.zone) state.snap(id, target.zone, own ?? start);
+      else if (!pressed.tiled) state.setBounds(id, rectAt(pointer, 1));
+      state.setDropPreview(null);
 
       // Whatever the store decided, travel there from where the window was dropped.
       const settled = useWindowsStore.getState().windows[id];

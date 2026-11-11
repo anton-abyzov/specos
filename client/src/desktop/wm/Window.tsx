@@ -39,8 +39,6 @@ interface WindowProps {
   offstage: boolean;
   /** Set while the overview shows this window. */
   place: OverviewPlace | null;
-  /** The overview's keyboard selection is on this window. */
-  selected: boolean;
 }
 
 const HANDLES: Array<{ name: string; edges: ResizeEdges }> = [
@@ -129,7 +127,7 @@ function Skeleton() {
   );
 }
 
-export const Window = memo(function Window({ win, focused, offstage, place, selected }: WindowProps) {
+export const Window = memo(function Window({ win, focused, offstage, place }: WindowProps) {
   const { id, appId, mode, bounds } = win;
   const app = getApp(appId);
   const AppComponent = app.component;
@@ -148,8 +146,9 @@ export const Window = memo(function Window({ win, focused, offstage, place, sele
   }, [present, bounds]);
 
   // Once the flight to the dock is over the window is taken off screen for real.
+  // The overview brings minimised windows back into view; they fly to the dock again when it closes.
   const [parked, setParked] = useState(minimized);
-  if (!minimized && parked) setParked(false);
+  if (parked && (!minimized || place)) setParked(false);
 
   // Measured as the window is minimised, so it flies to where its icon is now.
   const docked = useMemo(() => (minimized ? dockTarget(win) : null), [minimized]);
@@ -200,10 +199,9 @@ export const Window = memo(function Window({ win, focused, offstage, place, sele
       data-focused={focused || undefined}
       data-tiled={win.tiled || undefined}
       data-offstage={offstage || undefined}
-      data-parked={(minimized && parked && !place) || undefined}
+      data-parked={(minimized && parked) || undefined}
       data-closing={!present || undefined}
       data-overview={place ? '' : undefined}
-      data-selected={selected || undefined}
       aria-label={win.title}
       style={{ zIndex: win.z, '--desk': win.desktop, ...(agent ? agentVars(agent.hue) : null) } as CSSProperties}
       onPointerDownCapture={() => {
@@ -218,7 +216,8 @@ export const Window = memo(function Window({ win, focused, offstage, place, sele
         exit={{ opacity: 0, ...scaledAboutCentre(bounds, 0.96), transition: spring('windowClose') }}
         transition={transition}
         onAnimationComplete={() => {
-          if (useWindowsStore.getState().windows[id]?.mode === 'minimized') setParked(true);
+          const state = useWindowsStore.getState();
+          if (state.windows[id]?.mode === 'minimized' && !state.overviewOpen) setParked(true);
         }}
       >
         <header

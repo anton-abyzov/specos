@@ -25,7 +25,6 @@
   border-radius: var(--r-2xl);
   background: var(--glass);
   backdrop-filter: var(--blur-glass);
-  -webkit-backdrop-filter: var(--blur-glass);
   box-shadow: var(--shadow-dock), inset 0 1px 0 var(--glass-highlight);
 }
 
@@ -115,7 +114,6 @@
   border-radius: var(--r-md);
   background: var(--glass-strong);
   backdrop-filter: var(--blur-soft);
-  -webkit-backdrop-filter: var(--blur-soft);
   box-shadow: var(--shadow-sm);
   color: var(--ink);
   font-size: var(--text-sm);

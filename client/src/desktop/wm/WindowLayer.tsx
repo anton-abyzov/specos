@@ -1,11 +1,13 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { spring } from '../../design/motion';
+import { DropPreview } from './DropPreview';
 import { bindKeys } from './keys';
+import { allOverviewTiles } from './overview-layout';
 import { persistLayout } from './persistence';
 import { connectShell } from './shell-port';
 import { useWindowsStore } from './store';
-import { Window } from './Window';
+import { Window, type OverviewPlace } from './Window';
 
 /**
  * The layer every window lives in, below the menu bar. The four desktops lie
@@ -16,7 +18,20 @@ export function WindowLayer() {
   const windows = useWindowsStore((state) => state.windows);
   const focusedId = useWindowsStore((state) => state.focusedId);
   const desktop = useWindowsStore((state) => state.desktop);
+  const overviewOpen = useWindowsStore((state) => state.overviewOpen);
+  const viewport = useWindowsStore((state) => state.viewport);
   const layer = useRef<HTMLDivElement>(null);
+
+  // In the overview each window is moved and scaled from its own frame to its tile.
+  const places = useMemo(() => {
+    const byId = new Map<string, OverviewPlace>();
+    if (!overviewOpen) return byId;
+    for (const [id, tile] of allOverviewTiles(windows, viewport)) {
+      const { bounds } = windows[id]!;
+      byId.set(id, { x: tile.rect.x - bounds.x, y: tile.rect.y - bounds.y, scale: tile.scale });
+    }
+    return byId;
+  }, [overviewOpen, windows, viewport]);
 
   // The desktop the stage last came to rest on. While it differs from the
   // current one the stage is sliding and every desktop it passes is visible.
@@ -49,7 +64,7 @@ export function WindowLayer() {
       <motion.div
         className="wm-stage"
         initial={false}
-        animate={{ x: `${-desktop * 100}%` }}
+        animate={{ x: -desktop * viewport.w }}
         transition={spring('desktopSlide')}
         onAnimationComplete={() => setRested(useWindowsStore.getState().desktop)}
       >
@@ -60,11 +75,11 @@ export function WindowLayer() {
               win={win}
               focused={win.id === focusedId}
               offstage={!sliding && win.desktop !== desktop}
-              place={null}
-              selected={false}
+              place={places.get(win.id) ?? null}
             />
           ))}
         </AnimatePresence>
+        <DropPreview />
       </motion.div>
     </div>
   );

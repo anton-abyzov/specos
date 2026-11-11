@@ -70,6 +70,14 @@
     var(--wm-shadow-front);
 }
 
+/* Tiles sit edge to edge: a tall shadow would fall across the neighbour, so they keep only the near one. */
+.wm-frame[data-tiled] .window,
+.wm-frame[data-mode='snapped'] .window {
+  box-shadow:
+    0 0 0 1px var(--hairline-strong),
+    var(--shadow-sm);
+}
+
 .wm-frame[data-mode='fullscreen'] .window {
   border-radius: 0;
   box-shadow: none;
@@ -87,9 +95,8 @@
   border-bottom: 1px solid var(--hairline);
   background: var(--surface-sunken);
   color: var(--ink-muted);
-  transition:
-    background-color var(--t-base) var(--ease-out),
-    color var(--t-base) var(--ease-out);
+  /* The background changes at once: a colour transition here can be left behind on a scaled window in the overview. */
+  transition: color var(--t-base) var(--ease-out);
 }
 
 .wm-frame[data-focused] .window__bar {
@@ -197,11 +204,6 @@
 
 .window__app {
   height: 100%;
-}
-
-/* Unfocused windows step back a little without losing legibility. */
-.wm-frame:not([data-focused]) .window__app {
-  opacity: 0.94;
 }
 
 .window__shield {
@@ -359,4 +361,51 @@
   cursor: var(--wm-gesture-cursor, default) !important;
   user-select: none !important;
   -webkit-user-select: none !important;
+}
+
+/* ---------------------------------------------------------------- drop preview */
+
+/* Where a dragged window will land. Drawn like a marked-out area on a plan. */
+.wm-drop {
+  position: absolute;
+  top: 0;
+  border: 1.5px solid color-mix(in oklch, var(--accent) 70%, transparent);
+  border-radius: var(--r-lg);
+  background: color-mix(in oklch, var(--accent) 11%, var(--glass));
+  backdrop-filter: var(--blur-soft);
+  box-shadow: inset 0 0 0 1px var(--glass-highlight);
+  pointer-events: none;
+}
+
+.wm-drop__size {
+  position: absolute;
+  top: var(--s-3);
+  left: var(--s-3);
+  padding: 2px 7px;
+  border-radius: var(--r-xs);
+  background: var(--accent-fill);
+  color: var(--on-accent);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- overview */
+
+/* In the overview the windows are a picture of themselves: the overview's own targets take the pointer. */
+.wm-frame[data-overview] {
+  pointer-events: none;
+}
+
+.wm-frame[data-overview] .window {
+  border-radius: var(--r-lg);
+  box-shadow:
+    0 0 0 1px var(--hairline-strong),
+    var(--wm-shadow-front);
+}
+
+/* A scaled picture has nothing to animate; changes inside it (a theme switch, say) apply at once. */
+.wm-frame[data-overview] .window * {
+  transition: none !important;
 }

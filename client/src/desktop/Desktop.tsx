@@ -1,6 +1,7 @@
-import type { PointerEvent } from 'react';
+import { useState, type PointerEvent } from 'react';
 import { Dock } from './Dock';
 import { MenuBar } from './MenuBar';
+import { Overview } from './Overview';
 import { Wallpaper } from './Wallpaper';
 import { WindowLayer } from './wm/WindowLayer';
 import { useWindowsStore } from './wm/store';
@@ -13,12 +14,24 @@ function onPointerDown(event: PointerEvent<HTMLElement>) {
 
 /** The whole screen: wallpaper at the back, then windows, then the menu bar and dock. */
 export function Desktop() {
+  const overviewOpen = useWindowsStore((state) => state.overviewOpen);
+  // The windows stay above the menu bar and dock until the overview has faded out
+  // completely, so they never dip under its backdrop on the way back.
+  const [overviewShown, setOverviewShown] = useState(false);
+  if (overviewOpen && !overviewShown) setOverviewShown(true);
+
   return (
-    <main className="desktop" data-testid="desktop" onPointerDown={onPointerDown}>
+    <main
+      className="desktop"
+      data-testid="desktop"
+      data-overview={overviewShown || undefined}
+      onPointerDown={onPointerDown}
+    >
       <Wallpaper />
       <WindowLayer />
       <MenuBar />
       <Dock />
+      <Overview onClosed={() => setOverviewShown(false)} />
     </main>
   );
 }

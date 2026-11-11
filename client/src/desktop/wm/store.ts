@@ -62,8 +62,8 @@ export interface WindowsState {
   /** Size of the windows layer (the screen below the menu bar). */
   viewport: Size;
   overviewOpen: boolean;
-  /** The zone a dragged window would snap to if released now. */
-  snapPreview: SnapZone | null;
+  /** The rectangle a dragged window would take if it were released now: a snap zone or another tile. */
+  dropPreview: Rect | null;
   /** Counter behind window ids and tile slots. */
   seq: number;
   /** Windows created before this moment came from a saved layout and appear without an opening animation. */
@@ -94,7 +94,7 @@ export interface WindowsState {
   /** Focuses the next window of the current desktop, or the previous one. */
   cycle(direction?: 1 | -1): void;
   setOverview(open: boolean): void;
-  setSnapPreview(zone: SnapZone | null): void;
+  setDropPreview(rect: Rect | null): void;
   setViewport(viewport: Size): void;
 }
 
@@ -242,12 +242,13 @@ export const useWindowsStore = create<WindowsState>((set, get) => {
   return {
     ...initialState(loadLayout()),
     overviewOpen: false,
-    snapPreview: null,
+    dropPreview: null,
     bootedAt: Date.now(),
 
     open(appId, params = {}) {
       const existing = reusable(get().windows, appId, params);
       if (existing) {
+        get().setOverview(false);
         get().focus(existing.id);
         return existing.id;
       }
@@ -393,7 +394,7 @@ export const useWindowsStore = create<WindowsState>((set, get) => {
               ? { mode: 'fullscreen', snapZone: null, restoreBounds }
               : { mode: 'snapped', snapZone: zone, restoreBounds },
           ),
-          snapPreview: null,
+          dropPreview: null,
         };
       });
     },
@@ -434,7 +435,7 @@ export const useWindowsStore = create<WindowsState>((set, get) => {
     setDesktop(target) {
       const desktop = clampDesktop(target);
       if (desktop === get().desktop) return;
-      set((state) => ({ desktop, focusedId: frontId(state.windows, desktop), snapPreview: null }));
+      set((state) => ({ desktop, focusedId: frontId(state.windows, desktop), dropPreview: null }));
     },
 
     toggleTiling() {
@@ -465,11 +466,13 @@ export const useWindowsStore = create<WindowsState>((set, get) => {
     },
 
     setOverview(open) {
-      if (get().overviewOpen !== open) set({ overviewOpen: open, snapPreview: null });
+      if (get().overviewOpen !== open) set({ overviewOpen: open, dropPreview: null });
     },
 
-    setSnapPreview(zone) {
-      if (get().snapPreview !== zone) set({ snapPreview: zone });
+    setDropPreview(rect) {
+      const shown = get().dropPreview;
+      if (shown === rect || (shown && rect && rectsEqual(shown, rect))) return;
+      set({ dropPreview: rect });
     },
 
     setViewport(viewport) {
