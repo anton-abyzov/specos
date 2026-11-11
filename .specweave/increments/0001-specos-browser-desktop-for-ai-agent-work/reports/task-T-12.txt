@@ -1,0 +1,9 @@
+$ E2E_PORT=7401 PWDEBUG=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/e2e/design.spec.ts
+# exit 0 — 2026-11-11T19:07:49.390Z
+
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/design.spec.ts:6:1 › the design system applies both themes and loads its bundled fonts (1.5s)
+
+  1 passed (2.8s)

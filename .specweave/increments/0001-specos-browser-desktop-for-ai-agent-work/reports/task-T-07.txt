@@ -1,0 +1,12 @@
+$ npx vitest run tests/server/pty.test.ts
+# exit 0 — 2026-11-11T19:24:04.593Z
+
+
+ RUN  v5.1.0 /home/anton/live/spec-os
+
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  14:24:03
+   Duration  1.35s (tests 91%, import 7%, transform 2%)
+

@@ -1,0 +1,13 @@
+$ E2E_PORT=7401 PWDEBUG=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/e2e/windows.spec.ts
+# exit 0 — 2026-11-11T21:37:46.729Z
+
+
+Running 4 tests using 1 worker
+
+  ✓  1 tests/e2e/windows.spec.ts:71:1 › windows open from the dock and the hook, and clicking one brings it to the front (5.0s)
+drag: 69 frames, median 16.7 ms, 1 over 34 ms
+  ✓  2 tests/e2e/windows.spec.ts:150:1 › dragging a window follows the pointer exactly at 60 frames a second (2.4s)
+  ✓  3 tests/e2e/windows.spec.ts:246:1 › a window resizes from its corner and its edge, never below its minimum size (2.2s)
+  ✓  4 tests/e2e/windows.spec.ts:308:1 › a window minimises to the dock, goes full screen and closes (9.8s)
+
+  4 passed (23.7s)

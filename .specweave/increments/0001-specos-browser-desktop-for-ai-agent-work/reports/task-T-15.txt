@@ -1,0 +1,13 @@
+$ E2E_PORT=7401 PWDEBUG=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/e2e/layout.spec.ts
+# exit 0 — 2026-11-11T21:54:12.433Z
+
+
+Running 5 tests using 1 worker
+
+  ✓  1 tests/e2e/layout.spec.ts:97:1 › a window snaps to halves and quarters at the screen edges and comes away at its own size (21.7s)
+  ✓  2 tests/e2e/layout.spec.ts:179:1 › tiling arranges every window of a desktop and gives their places back when turned off (14.5s)
+  ✓  3 tests/e2e/layout.spec.ts:266:1 › four desktops keep their own windows and switch with a slide (5.8s)
+  ✓  4 tests/e2e/layout.spec.ts:334:1 › the overview shows every window of the desktop and focuses the one that is picked (17.3s)
+  ✓  5 tests/e2e/layout.spec.ts:462:1 › the layout comes back after a reload, without an opening animation (7.2s)
+
+  5 passed (1.2m)

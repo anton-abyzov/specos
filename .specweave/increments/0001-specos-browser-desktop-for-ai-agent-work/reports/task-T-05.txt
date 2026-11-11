@@ -1,0 +1,12 @@
+$ npx vitest run tests/server/fs-api.test.ts
+# exit 0 — 2026-11-11T19:15:20.415Z
+
+
+ RUN  v5.1.0 /home/anton/live/spec-os
+
+
+ Test Files  1 passed (1)
+      Tests  43 passed (43)
+   Start at  14:15:19
+   Duration  692ms (tests 83%, import 14%, transform 3%)
+

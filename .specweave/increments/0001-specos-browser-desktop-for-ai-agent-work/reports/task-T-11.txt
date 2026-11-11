@@ -1,0 +1,12 @@
+$ npx vitest run tests/server/system.test.ts
+# exit 0 — 2026-11-11T19:09:26.397Z
+
+
+ RUN  v5.1.0 /home/anton/live/spec-os
+
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  14:09:21
+   Duration  4.72s (tests 97%, import 2%, transform 1%)
+

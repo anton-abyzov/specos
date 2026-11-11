@@ -1,0 +1,13 @@
+$ E2E_PORT=7401 PWDEBUG=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/e2e/shell.spec.ts
+# exit 0 — 2026-11-11T22:24:27.438Z
+
+
+Running 5 tests using 1 worker
+
+  ✓  1 tests/e2e/shell.spec.ts:23:1 › the menu bar shows live machine facts and the clock (6.1s)
+  ✓  2 tests/e2e/shell.spec.ts:65:1 › the SpecOS menu opens, switches the theme and closes on Escape (6.6s)
+  ✓  3 tests/e2e/shell.spec.ts:123:1 › the desktops switcher changes the current desktop (1.3s)
+  ✓  4 tests/e2e/shell.spec.ts:139:1 › the dock shows seven apps, magnifies under the pointer and marks running apps (4.9s)
+  ✓  5 tests/e2e/shell.spec.ts:190:1 › a running agent shows in the agents pill and the dock until it finishes (7.8s)
+
+  5 passed (30.8s)

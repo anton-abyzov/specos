@@ -1,0 +1,17 @@
+$ E2E_PORT=7401 PWDEBUG=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/e2e/launcher.spec.ts
+# exit 0 — 2026-11-11T22:22:55.791Z
+
+
+Running 8 tests using 1 worker
+
+  ✓  1 tests/e2e/launcher.spec.ts:45:1 › the shortcuts open the launcher with the field focused, and Escape gives the focus back (3.9s)
+  ✓  2 tests/e2e/launcher.spec.ts:83:1 › before a query it shows the apps as a grid and a few actions, and the arrows move the selection (5.3s)
+  ✓  3 tests/e2e/launcher.spec.ts:134:1 › typing "ter" selects Terminal and Enter opens a Terminal window (1.8s)
+  ✓  4 tests/e2e/launcher.spec.ts:158:1 › a fuzzy, non-contiguous query finds a file, and Enter opens it where it belongs (3.3s)
+  ✓  5 tests/e2e/launcher.spec.ts:220:1 › actions run: the theme, tiling, desktops, and a new project folder (6.5s)
+  ✓  6 tests/e2e/launcher.spec.ts:291:1 › while it is open the other global shortcuts do not fire (2.1s)
+  ✓  7 tests/e2e/launcher.spec.ts:313:1 › a running agent is found by its name and opens in its own window (7.5s)
+keystroke to results, ms: 37.3 28.1 18.2 18.2 18.9 10.8 10.1 15.6 10.6 15.9 12.3 13.0 10.7 21.3 12.6 10.8 9.6 9.0 7.2 7.5 11.5 11.2 17.5 10.2 10.1
+  ✓  8 tests/e2e/launcher.spec.ts:352:1 › results follow every keystroke within a frame with 5000 files indexed (8.7s)
+
+  8 passed (43.1s)
