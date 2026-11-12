@@ -70,6 +70,11 @@
   outline-offset: -1px;
 }
 
+/* An open menu shows where the keyboard is on its own items, so its title carries no ring. */
+.menu-strip__title[data-open]:focus-visible {
+  outline: none;
+}
+
 .menu-strip__title--mark {
   padding: 0 var(--s-2);
 }
