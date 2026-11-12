@@ -563,7 +563,7 @@ test('every screen of a working desktop holds together in light and dark', async
   // ------------------------------------------------------------ the launcher with a query
   await page.keyboard.press('Control+k');
   await expect(page.getByTestId('launcher-input')).toBeFocused();
-  await page.keyboard.type('tide');
+  await page.keyboard.type('harbor tides');
   await expect(page.locator('[data-testid="launcher-item"][data-key="file:Projects/harbor/src/tides.ts"]')).toBeVisible();
   await page.waitForTimeout(400);
   const launcherBox = (await page.getByTestId('launcher').locator('.launcher__field').boundingBox())!;
