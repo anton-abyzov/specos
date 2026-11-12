@@ -32,6 +32,20 @@
   width: min(880px, 100vw - 64px);
   height: 100%;
   padding-top: clamp(72px, 15vh, 168px);
+  /* The paper arrives first, so the words never cross-fade over the windows they cover. */
+  animation: launcher-words 120ms 50ms var(--ease-out) backwards;
+}
+
+@keyframes launcher-words {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .launcher__column {
+    animation-delay: 0s;
+  }
 }
 
 /* ---------------------------------------------------------------- field */
