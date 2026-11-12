@@ -3,6 +3,7 @@ import { Dock } from './Dock';
 import { Launcher } from './Launcher';
 import { MenuBar } from './MenuBar';
 import { Overview } from './Overview';
+import { QuickLook } from './QuickLook';
 import { Wallpaper } from './Wallpaper';
 import { WindowLayer } from './wm/WindowLayer';
 import { useWindowsStore } from './wm/store';
@@ -33,6 +34,7 @@ export function Desktop() {
       <MenuBar />
       <Dock />
       <Overview onClosed={() => setOverviewShown(false)} />
+      <QuickLook />
       <Launcher />
     </main>
   );

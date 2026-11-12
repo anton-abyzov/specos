@@ -1,0 +1,996 @@
+/*
+ * Files: the home folder laid out like a set of drawings. A quiet margin of
+ * places on the left, one ruled column per folder, and a title block for the
+ * selected sheet at the right end. Colour is kept for two things: the
+ * selection, and whoever just changed a file.
+ */
+
+.files {
+  --row: 28px;
+  display: flex;
+  height: 100%;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-md);
+  container-type: inline-size;
+}
+
+.files:focus-visible {
+  outline: none;
+}
+
+.files__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ---------------------------------------------------------------- sidebar */
+
+.files-sidebar {
+  flex: none;
+  width: 204px;
+  overflow-y: auto;
+  padding: var(--s-3) var(--s-2) var(--s-4);
+  border-right: 1px solid var(--hairline);
+  background: var(--surface-sunken);
+}
+
+@container (max-width: 720px) {
+  .files-sidebar {
+    display: none;
+  }
+}
+
+.files-sidebar__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.files-sidebar__heading {
+  margin: var(--s-5) 0 var(--s-1);
+  padding: 0 var(--s-2);
+  color: var(--ink-faint);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.01em;
+}
+
+.files-sidebar__empty {
+  padding: 2px var(--s-2);
+  color: var(--ink-faint);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+.files-place {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  height: var(--row);
+  padding: 0 var(--s-2);
+  border-radius: var(--r-sm);
+  color: var(--ink-soft);
+  text-align: left;
+  transition: background-color var(--t-fast) var(--ease-out);
+}
+
+.files-place:hover {
+  background: var(--hover);
+}
+
+.files-place[data-current] {
+  background: var(--pressed);
+  color: var(--ink);
+  font-weight: var(--weight-medium);
+}
+
+.files-place[data-drop] {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+.files-place:focus-visible {
+  outline-offset: -2px;
+}
+
+.files-place__glyph {
+  flex: none;
+  color: var(--ink-muted);
+}
+
+.files-place__label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.files-place__owner {
+  flex: none;
+  color: var(--agent-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+
+/* An agent's copy: its colour as a dot, with a ring leaving it while the agent works. */
+.files-place__agent {
+  position: relative;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin: 0 4px;
+  border: 1.5px solid var(--ink-faint);
+  border-radius: var(--r-full);
+}
+
+.files-place__agent[data-owned] {
+  border-color: var(--agent-solid);
+  background: var(--agent-solid);
+}
+
+.files-place__agent[data-running]::after,
+.files-owner__dot[data-running]::after {
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 1.5px var(--agent-ring);
+  animation: files-pulse 1.8s ease-out infinite;
+  content: '';
+}
+
+@keyframes files-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.files-place__dot,
+.files-row__dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--agent-solid, var(--accent));
+  animation: files-dot-in var(--t-slow) var(--ease-out) both;
+}
+
+@keyframes files-dot-in {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* ---------------------------------------------------------------- bar */
+
+.files-bar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--s-2);
+  height: 40px;
+  padding: 0 var(--s-3) 0 var(--s-2);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.files-bar__key {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-sm);
+  color: var(--ink-muted);
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+}
+
+.files-bar__key:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.files-bar__key:disabled {
+  color: var(--hairline-strong);
+}
+
+.files-crumbs {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.files-crumbs__step {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  min-width: 0;
+}
+
+.files-crumbs__step:first-child,
+.files-crumbs__step:last-child {
+  flex-shrink: 0;
+}
+
+.files-crumbs__rule {
+  flex: none;
+  margin: 0 1px;
+  color: var(--ink-faint);
+}
+
+.files-crumbs__crumb {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  max-width: 220px;
+  height: 26px;
+  overflow: hidden;
+  padding: 0 6px;
+  border-radius: var(--r-sm);
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+}
+
+.files-crumbs__crumb:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.files-crumbs__crumb[aria-current] {
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+}
+
+.files-bar__button {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 9px 0 7px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-sm);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  transition: background-color var(--t-fast) var(--ease-out);
+}
+
+.files-bar__button:hover {
+  background: var(--hover);
+}
+
+.files-bar__button:active {
+  background: var(--pressed);
+}
+
+/* ---------------------------------------------------------------- columns */
+
+.files-columns {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior: contain;
+}
+
+.files-columns[data-scrolled] {
+  mask-image: linear-gradient(to right, transparent, #000 20px);
+}
+
+.files-column {
+  position: relative;
+  flex: none;
+  width: 240px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 6px;
+  border-right: 1px solid var(--hairline);
+}
+
+.files-column[data-drop] {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+.files-column__note {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-1);
+  padding: var(--s-8) var(--s-3) 0;
+  color: var(--ink-faint);
+  font-size: var(--text-sm);
+  text-align: center;
+  pointer-events: none;
+}
+
+.files-column__note svg {
+  margin-bottom: var(--s-1);
+}
+
+.files-column__hint {
+  font-size: var(--text-xs);
+}
+
+.files-column__hint kbd {
+  padding: 0 4px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-xs);
+  font-size: var(--text-2xs);
+}
+
+.files-column__loading {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 10px var(--s-2);
+  /* A folder is usually listed before this would show. */
+  animation: files-fade-in var(--t-slow) var(--ease-out) 240ms both;
+  pointer-events: none;
+}
+
+.files-column__loading span {
+  height: 8px;
+  border-radius: var(--r-full);
+  background: var(--hairline);
+}
+
+.files-column__loading span:nth-child(1) {
+  width: 58%;
+}
+.files-column__loading span:nth-child(2) {
+  width: 76%;
+}
+.files-column__loading span:nth-child(3) {
+  width: 44%;
+}
+
+@keyframes files-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------------------------------------------------------------- rows */
+
+.files-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: var(--row);
+  overflow: hidden;
+  padding: 0 6px 0 var(--s-2);
+  border-radius: var(--r-sm);
+  color: var(--ink);
+}
+
+.files-row > * {
+  position: relative;
+}
+
+.files-row:hover {
+  background: var(--hover);
+}
+
+.files-row[data-hidden] .files-row__name,
+.files-row[data-hidden] .files-row__glyph {
+  opacity: 0.6;
+}
+
+/* The row on the way to the selection, and the selection of a window that is not in front. */
+.files-row[data-selected] {
+  background: var(--pressed);
+}
+
+/* The row the keyboard is on. */
+.files[data-focused] .files-row[data-selected='active'] {
+  background: var(--accent-fill);
+  color: var(--on-accent);
+}
+
+.files-row[data-drop] {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+.files-row__glyph {
+  flex: none;
+  color: var(--ink-muted);
+}
+
+.files-row[data-kind='dir'] .files-row__glyph {
+  color: color-mix(in oklch, var(--ink-muted), oklch(0.72 0.135 78) 55%);
+}
+
+.files-row__chevron {
+  flex: none;
+  color: var(--ink-faint);
+}
+
+.files[data-focused] .files-row[data-selected='active'] .files-row__glyph,
+.files[data-focused] .files-row[data-selected='active'] .files-row__chevron {
+  color: inherit;
+}
+
+.files-row__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.files-row__input {
+  flex: 1;
+  min-width: 0;
+  height: 22px;
+  margin: 0 -5px;
+  padding: 0 4px;
+  border: 1px solid var(--accent);
+  border-radius: var(--r-xs);
+  background: var(--surface-raised);
+  color: var(--ink);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+
+.files-row__input:focus-visible {
+  outline: none;
+}
+
+.files-row__input::placeholder {
+  color: var(--ink-faint);
+}
+
+.files-row--draft,
+.files-row--draft:hover {
+  background: none;
+}
+
+/* Who just changed it: the agent's name on its own colour, with the clipped corner. */
+.files-row__tag {
+  --chamfer: 5px;
+  flex: none;
+  max-width: 96px;
+  overflow: hidden;
+  padding: 0 7px 0 6px;
+  border-radius: 3px;
+  background: var(--agent-solid);
+  clip-path: var(--clip-chamfer);
+  color: var(--agent-on-solid);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-medium);
+  line-height: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  animation: files-tag-in var(--t-slow) var(--ease-out) both;
+}
+
+@keyframes files-tag-in {
+  from {
+    transform: translateX(6px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/*
+ * A fresh change: a band of light crosses the row once, and a tint stays
+ * behind and fades. An agent's change uses the agent's colour and lingers; my
+ * own uses the accent and is gone in a moment.
+ */
+.files-row__sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--accent-soft);
+  animation: files-tint 1400ms var(--ease-out) both;
+  pointer-events: none;
+}
+
+.files-row[data-fresh='agent'] .files-row__sweep {
+  background: var(--agent-soft);
+  animation-duration: 5000ms;
+  animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.4);
+}
+
+.files-row__sweep::after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 55%;
+  background: linear-gradient(90deg, transparent, var(--accent-soft) 45%, var(--accent-soft) 55%, transparent);
+  animation: files-sweep 900ms var(--ease-out) both;
+  content: '';
+}
+
+.files-row[data-fresh='agent'] .files-row__sweep::after {
+  background: linear-gradient(90deg, transparent, var(--agent-border) 50%, transparent);
+}
+
+@keyframes files-tint {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes files-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(185%);
+  }
+}
+
+/* A row that was just created opens up; a deleted one closes and is gone. */
+.files-row[data-new] {
+  animation: files-row-in 220ms var(--ease-out) both;
+}
+
+.files-row[data-leaving] {
+  animation: files-row-out 240ms var(--ease-in-out) both;
+  pointer-events: none;
+}
+
+@keyframes files-row-in {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--row);
+    opacity: 1;
+  }
+}
+
+@keyframes files-row-out {
+  from {
+    height: var(--row);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+/* "Delete?" asked in the row itself. */
+.files-row__confirm {
+  display: flex;
+  flex: none;
+  gap: 3px;
+}
+
+.files-row__yes,
+.files-row__no {
+  height: 20px;
+  padding: 0 7px;
+  border-radius: var(--r-xs);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+}
+
+.files-row__yes {
+  background: var(--surface-raised);
+  color: var(--danger);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+}
+
+.files-row__yes:hover {
+  background: var(--danger);
+  color: var(--on-accent);
+}
+
+.files-row__no {
+  color: inherit;
+  opacity: 0.85;
+}
+
+.files-row__no:hover {
+  background: var(--hover);
+  opacity: 1;
+}
+
+/* What follows the pointer while a row is dragged. */
+.files-drag {
+  --chamfer: 8px;
+  position: fixed;
+  top: -200px;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  max-width: 260px;
+  height: 30px;
+  overflow: hidden;
+  padding: 0 14px 0 10px;
+  border-radius: var(--r-sm);
+  background: var(--accent-fill);
+  clip-path: var(--clip-chamfer);
+  color: var(--on-accent);
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- details */
+
+.files-details {
+  flex: none;
+  width: 288px;
+  overflow-y: auto;
+  padding: var(--s-5) var(--s-5) var(--s-6);
+  background: var(--surface-sunken);
+}
+
+.files-details__figure {
+  display: grid;
+  place-items: center;
+  height: 168px;
+  margin-bottom: var(--s-4);
+}
+
+.files-details__figure[data-kind='image'] {
+  --chamfer: 16px;
+  overflow: hidden;
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  background:
+    conic-gradient(var(--hairline-faint) 25%, transparent 0 50%, var(--hairline-faint) 0 75%, transparent 0) 0 0 / 16px 16px,
+    var(--surface);
+  clip-path: var(--clip-chamfer);
+}
+
+.files-details__thumb {
+  max-width: 100%;
+  max-height: 100%;
+  min-width: 0;
+  min-height: 0;
+  object-fit: contain;
+}
+
+.files-details__folder {
+  color: color-mix(in oklch, var(--ink-muted), oklch(0.72 0.135 78) 55%);
+}
+
+.files-sheet {
+  position: relative;
+  width: 96px;
+  height: 120px;
+  filter: drop-shadow(0 6px 12px rgb(40 30 15 / 0.12));
+}
+
+.files-sheet__paper {
+  fill: var(--surface-raised);
+  stroke: var(--hairline-strong);
+  stroke-width: 1;
+}
+
+.files-sheet__fold,
+.files-sheet__lines {
+  fill: none;
+  stroke: var(--hairline-strong);
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+.files-sheet__lines {
+  stroke: var(--hairline);
+  stroke-width: 2;
+}
+
+.files-sheet__glyph {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  color: var(--accent-ink);
+}
+
+.files-sheet__ext {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.02em;
+}
+
+.files-details__name {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.012em;
+  line-height: var(--leading-tight);
+  overflow-wrap: anywhere;
+}
+
+.files-details__kind {
+  margin-top: 2px;
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+}
+
+/* Facts, set like the title block of a drawing: a ruled table, values in mono. */
+.files-facts {
+  margin: var(--s-4) 0 0;
+  border-top: 1px solid var(--hairline-strong);
+}
+
+.files-facts__row {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: var(--s-2);
+  align-items: baseline;
+  min-height: 26px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.files-facts dt {
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+}
+
+.files-facts dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.files-facts dd.files-facts__wrap {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.files-details__actions {
+  display: flex;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+}
+
+.files-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 var(--s-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  transition: background-color var(--t-fast) var(--ease-out);
+}
+
+.files-button:hover {
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-xs);
+}
+
+.files-button:active {
+  background: var(--pressed);
+}
+
+.files-button--primary {
+  border-color: transparent;
+  background: var(--accent-fill);
+  color: var(--on-accent);
+}
+
+.files-button--primary:hover {
+  background: var(--accent-hover);
+}
+
+.files-button--primary:active {
+  background: var(--accent-fill);
+}
+
+.files-button--wide {
+  width: 100%;
+}
+
+.files-button:disabled {
+  opacity: 0.6;
+}
+
+.files-copy {
+  margin-top: var(--s-5);
+}
+
+.files-copy__made {
+  margin-top: var(--s-3);
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+}
+
+.files-copy__link {
+  display: block;
+  max-width: 100%;
+  margin-top: 1px;
+  color: var(--accent-ink);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.files-copy__failure {
+  margin-top: var(--s-2);
+  color: var(--danger);
+  font-size: var(--text-xs);
+}
+
+.files-facts--clone {
+  margin-top: var(--s-2);
+}
+
+.files-owner {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--text-sm);
+}
+
+.files-owner__dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-full);
+  background: var(--agent-solid);
+}
+
+.files-owner__name {
+  color: var(--agent-text);
+  font-weight: var(--weight-semibold);
+}
+
+.files-owner__status {
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+/* ---------------------------------------------------------------- foot */
+
+.files-foot {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+  height: 26px;
+  padding: 0 var(--s-3);
+  border-top: 1px solid var(--hairline);
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.files-foot__count {
+  flex: none;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.files-foot__hidden {
+  margin-left: var(--s-3);
+  color: var(--ink-faint);
+}
+
+.files-foot__notice {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink-soft);
+  text-overflow: ellipsis;
+}
+
+/* ---------------------------------------------------------------- context menu */
+
+.files-menu {
+  position: fixed;
+  z-index: var(--z-popover);
+  min-width: 208px;
+  padding: var(--s-1);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-md);
+  background: var(--glass-strong);
+  backdrop-filter: var(--blur-glass);
+  box-shadow: var(--shadow-md), inset 0 1px 0 var(--glass-highlight);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  transform-origin: 0 0;
+}
+
+.files-menu:focus-visible {
+  outline: none;
+}
+
+.files-menu__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-6);
+  height: 26px;
+  padding: 0 var(--s-2) 0 10px;
+  border-radius: var(--r-xs);
+}
+
+.files-menu__item[data-active] {
+  background: var(--accent-fill);
+  color: var(--on-accent);
+}
+
+.files-menu__item[aria-disabled] {
+  color: var(--ink-faint);
+}
+
+.files-menu__shortcut {
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+
+.files-menu__item[data-active] .files-menu__shortcut {
+  color: inherit;
+  opacity: 0.85;
+}
+
+.files-menu__rule {
+  height: 1px;
+  margin: var(--s-1) 6px;
+  background: var(--hairline);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .files-place__agent[data-running]::after,
+  .files-owner__dot[data-running]::after,
+  .files-row__sweep::after {
+    display: none;
+  }
+}

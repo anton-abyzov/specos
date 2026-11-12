@@ -5,10 +5,11 @@
  */
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { APP_COLORS } from '../design/color';
-import { activityMenus } from './activity/menus';
 import { agentMenus } from './agent/menus';
 import { agentsMenus } from './agents/menus';
 import { chatMenus } from './chat/menus';
+import { filesMenus } from './files/commands';
+import { activityMenus } from './activity/menus';
 import { editorMenus } from './editor/menus';
 import { systemMenus } from './system/menus';
 import { terminalMenus } from './terminal/menus';
@@ -69,6 +70,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     minSize: { w: 560, h: 360 },
     singleton: false,
     inDock: true,
+    menus: filesMenus,
   },
   terminal: {
     id: 'terminal',
