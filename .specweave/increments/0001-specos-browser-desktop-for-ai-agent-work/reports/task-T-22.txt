@@ -1,0 +1,9 @@
+$ E2E_PORT=7414 PWDEBUG=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/e2e/activity.spec.ts --output=.e2e/results-7414 --reporter=list
+# exit 0 — 2026-11-12T04:22:01.897Z
+
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/activity.spec.ts:43:1 › activity shows who changed what, the diff, and merges an agent back (26.6s)
+
+  1 passed (29.2s)

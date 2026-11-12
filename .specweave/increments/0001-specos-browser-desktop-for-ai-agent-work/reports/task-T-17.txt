@@ -1,0 +1,17 @@
+$ E2E_PORT=7411 PWDEBUG=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/e2e/files.spec.ts
+# exit 0 — 2026-11-12T04:28:52.028Z
+
+
+Running 9 tests using 1 worker
+
+  ✓  1 tests/e2e/files.spec.ts:122:1 › columns open by click and by keyboard, and the breadcrumbs jump back (3.7s)
+  ✓  2 tests/e2e/files.spec.ts:217:1 › the launcher contract: a path opens that folder, a path with select opens it with the file selected (1.1s)
+  ✓  3 tests/e2e/files.spec.ts:234:1 › Space opens Peek with rendered Markdown, text and the picture, and it follows the selection (8.9s)
+  ✓  4 tests/e2e/files.spec.ts:317:1 › a folder and a file are made from the keyboard, renamed and deleted (2.9s)
+  ✓  5 tests/e2e/files.spec.ts:387:1 › the context menu offers the same actions in the design language (4.0s)
+  ✓  6 tests/e2e/files.spec.ts:445:1 › a file written from outside appears within a second, and a deleted one collapses away (2.1s)
+  ✓  7 tests/e2e/files.spec.ts:476:1 › a row an agent changes carries the agent tag while it runs (6.3s)
+  ✓  8 tests/e2e/files.spec.ts:513:1 › giving an agent its own copy reports how the clone went (1.7s)
+  ✓  9 tests/e2e/files.spec.ts:538:1 › dragging a file onto a folder moves it, and the drag carries the home path (2.1s)
+
+  9 passed (35.6s)

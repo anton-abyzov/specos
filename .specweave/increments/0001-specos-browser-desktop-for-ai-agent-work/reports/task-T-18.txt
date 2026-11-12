@@ -1,0 +1,17 @@
+$ E2E_PORT=7412 PWDEBUG=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/e2e/terminal.spec.ts --output .e2e/results-7412
+# exit 0 — 2026-11-12T04:19:54.012Z
+
+
+Running 9 tests using 1 worker
+
+  ✓  1 tests/e2e/terminal.spec.ts:66:1 › a terminal window runs a real shell in the home folder (1.1s)
+  ✓  2 tests/e2e/terminal.spec.ts:79:1 › params.cwd starts the shell in that folder (742ms)
+  ✓  3 tests/e2e/terminal.spec.ts:86:1 › the shell follows the window size, after a resize and after a snap has settled (3.0s)
+  ✓  4 tests/e2e/terminal.spec.ts:124:1 › each window has its own shell, and a session survives other desktops and the dock (1.6s)
+  ✓  5 tests/e2e/terminal.spec.ts:155:1 › the desktop keeps its shortcuts while ordinary keys go to the shell (1.7s)
+  ✓  6 tests/e2e/terminal.spec.ts:193:1 › the terminal takes its colours from the theme and switches live (741ms)
+  ✓  7 tests/e2e/terminal.spec.ts:217:1 › when the shell exits the window says so and Enter starts a new one (2.7s)
+  ✓  8 tests/e2e/terminal.spec.ts:242:1 › the menus act on the terminal in front (1.6s)
+  ✓  9 tests/e2e/terminal.spec.ts:258:1 › colourful output, for the screenshots (3.3s)
+
+  9 passed (18.8s)

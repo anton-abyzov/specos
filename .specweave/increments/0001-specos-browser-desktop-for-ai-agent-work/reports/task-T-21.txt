@@ -1,0 +1,11 @@
+$ E2E_PORT=7413 PWDEBUG=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/e2e/agents.spec.ts
+# exit 0 — 2026-11-12T04:26:06.519Z
+
+
+Running 3 tests using 1 worker
+
+  ✓  1 tests/e2e/agents.spec.ts:62:1 › with no agents the app says what an agent gets and offers to start one (2.6s)
+  ✓  2 tests/e2e/agents.spec.ts:79:1 › a window for a job the server does not know says so and closes (1.7s)
+  ✓  3 tests/e2e/agents.spec.ts:91:1 › an agent is a process: a card, a window, a dock icon, files, attachments and a merge (17.2s)
+
+  3 passed (24.2s)

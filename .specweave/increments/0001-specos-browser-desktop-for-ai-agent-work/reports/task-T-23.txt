@@ -1,0 +1,9 @@
+$ E2E_PORT=7414 PWDEBUG=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/e2e/system.spec.ts --output=.e2e/results-7414 --reporter=list
+# exit 0 — 2026-11-12T04:28:04.466Z
+
+
+Running 1 test using 1 worker
+
+  ✓  1 tests/e2e/system.spec.ts:8:1 › system shows this machine and times ten agent workspaces (12.1s)
+
+  1 passed (15.7s)

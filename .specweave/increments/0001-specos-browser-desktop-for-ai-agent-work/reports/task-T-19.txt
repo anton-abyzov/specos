@@ -1,0 +1,19 @@
+$ E2E_PORT=7412 PWDEBUG=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test tests/e2e/editor.spec.ts --output .e2e/results-7412
+# exit 0 — 2026-11-12T04:27:21.219Z
+
+
+Running 11 tests using 1 worker
+
+  ✓   1 tests/e2e/editor.spec.ts:139:1 › a file opens, is edited, saved with Ctrl+S and read back from disk (2.3s)
+  ✓   2 tests/e2e/editor.spec.ts:185:1 › a change from outside reloads a clean buffer in place and marks the changed lines (2.9s)
+  ✓   3 tests/e2e/editor.spec.ts:230:1 › a change from outside while the buffer is dirty asks: reload, or keep mine (2.8s)
+  ✓   4 tests/e2e/editor.spec.ts:263:1 › a deleted file is reported and the buffer is kept (1.1s)
+  ✓   5 tests/e2e/editor.spec.ts:283:1 › a TypeScript file is highlighted, in both themes (2.4s)
+  ✓   6 tests/e2e/editor.spec.ts:321:1 › Ctrl+F searches the buffer (2.3s)
+  ✓   7 tests/e2e/editor.spec.ts:339:1 › Markdown gets a rendered preview beside the text (4.0s)
+  ✓   8 tests/e2e/editor.spec.ts:380:1 › closing a window with unsaved changes asks first (5.8s)
+  ✓   9 tests/e2e/editor.spec.ts:423:1 › binary files and files over 2 MB get a message instead of loading (2.3s)
+  ✓  10 tests/e2e/editor.spec.ts:444:1 › with no file the window lists recent files and opens the launcher (8.8s)
+  ✓  11 tests/e2e/editor.spec.ts:484:1 › the menus act on the editor in front (1.8s)
+
+  11 passed (40.5s)
