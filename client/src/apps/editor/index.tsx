@@ -62,7 +62,8 @@ function glyphFor(path: string): GlyphName {
 /** Reads the file as text, or says why the Editor will not show it. */
 async function loadFile(path: string): Promise<Loaded> {
   try {
-    const entry = await api.fs.stat(path);
+    const entry = await api.fs.find(path);
+    if (!entry) return { reason: 'missing' };
     if (entry.kind === 'dir') return { reason: 'folder' };
     if (entry.size > MAX_BYTES) return { reason: 'large', size: entry.size };
     const response = await fetch(api.fs.readUrl(path), { credentials: 'same-origin', cache: 'no-store' });

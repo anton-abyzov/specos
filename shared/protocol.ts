@@ -44,6 +44,15 @@ export interface FsListResponse {
 export type FsStatResponse = FsEntry;
 
 /**
+ * GET /api/fs/stat?path=&missing=report answers a path with nothing at it with 200 and this body
+ * instead of 404, for a client that asks whether a file is there and must not log a failed request.
+ */
+export interface FsMissing {
+  missing: true;
+  path: string;
+}
+
+/**
  * GET  /api/fs/read?path=      raw bytes, Content-Type from the extension
  * PUT  /api/fs/write?path=     raw body, creates parent folders -> FsEntry
  * POST /api/fs/mkdir   {path}  -> FsEntry

@@ -16,6 +16,7 @@ import type {
   FsEntry,
   FsIndexResponse,
   FsListResponse,
+  FsMissing,
   FsMkdirRequest,
   FsRenameRequest,
   FsStatResponse,
@@ -116,6 +117,11 @@ export const api = {
   fs: {
     list: (path: string, signal?: AbortSignal) => json<FsListResponse>('GET', '/api/fs/list', { query: { path }, signal }),
     stat: (path: string) => json<FsStatResponse>('GET', '/api/fs/stat', { query: { path } }),
+    /** The entry at a path, or undefined when nothing is there. Unlike `stat`, a missing path is not a failed request. */
+    find: async (path: string): Promise<FsEntry | undefined> => {
+      const found = await json<FsEntry | FsMissing>('GET', '/api/fs/stat', { query: { path, missing: 'report' } });
+      return 'missing' in found ? undefined : found;
+    },
     /** The file decoded as UTF-8 text. */
     readText: async (path: string, signal?: AbortSignal) =>
       (await send('GET', '/api/fs/read', { query: { path }, signal })).text(),

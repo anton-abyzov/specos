@@ -141,6 +141,20 @@ describe('stat', () => {
     await expectError(await server.fetch('/api/fs/stat'), 400, 'bad_path');
     await expectError(await server.fetch('/api/fs/stat?path=a&path=b'), 400, 'bad_path');
   });
+
+  test('asked to report it, a missing path is an answer and not a failure', async () => {
+    fs.mkdirSync(inHome('docs'));
+    fs.writeFileSync(inHome('docs/here.txt'), 'abc');
+    const missing = await server.fetch('/api/fs/stat?path=docs%2Fnope.txt&missing=report');
+    expect([missing.status, await missing.json()]).toEqual([200, { missing: true, path: 'docs/nope.txt' }]);
+    const deeper = await server.fetch('/api/fs/stat?path=no%2Fsuch%2Ffolder.txt&missing=report');
+    expect([deeper.status, await deeper.json()]).toEqual([200, { missing: true, path: 'no/such/folder.txt' }]);
+    // What is there is described as always, and the path guard is not relaxed.
+    const present = await server.fetch('/api/fs/stat?path=docs%2Fhere.txt&missing=report');
+    expect(await present.json()).toMatchObject({ name: 'here.txt', kind: 'file', size: 3 });
+    await expectError(await server.fetch('/api/fs/stat?path=..%2Fnope.txt&missing=report'), 403, 'path_escape');
+    await expectError(await server.fetch('/api/fs/stat?path=docs%2Fhere.txt%2Fbelow&missing=report'), 400, 'not_a_directory');
+  });
 });
 
 describe('read', () => {

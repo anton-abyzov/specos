@@ -7,6 +7,7 @@ import type {
   ApiError,
   EntryKind,
   FsEntry,
+  FsMissing,
   FsIndexResponse,
   FsListResponse,
   FsMkdirRequest,
@@ -233,7 +234,19 @@ export async function registerFsApi(app: FastifyInstance, ctx: Ctx): Promise<voi
       return { path: toRel(home, abs), entries: entries.filter((entry) => entry !== undefined).sort(compareEntries) };
     });
 
-    api.get('/api/fs/stat', async (request): Promise<FsEntry> => entryAt(named((request.query as PathQuery).path)));
+    api.get('/api/fs/stat', async (request): Promise<FsEntry | FsMissing> => {
+      const query = request.query as PathQuery & { missing?: unknown };
+      const abs = named(query.path);
+      try {
+        return await entryAt(abs);
+      } catch (error) {
+        // Asked whether something is there, "no" is an answer and not a failure.
+        if (query.missing === 'report' && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+          return { missing: true, path: toRel(home, abs) };
+        }
+        throw error;
+      }
+    });
 
     api.get('/api/fs/read', async (request, reply: FastifyReply) => {
       const abs = opened((request.query as PathQuery).path);
