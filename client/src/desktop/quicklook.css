@@ -119,8 +119,8 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  /* The reading surface is nearly solid so text keeps its contrast over any wallpaper. */
-  background: color-mix(in oklch, var(--surface) 86%, transparent);
+  /* The reading surface is solid: what is behind the panel must never show through the text. */
+  background: var(--surface);
 }
 
 .peek__body[data-kind='image'] {
@@ -131,7 +131,7 @@
   /* A checkerboard, so transparent pixels read as transparent. */
   background:
     conic-gradient(var(--hairline-faint) 25%, transparent 0 50%, var(--hairline-faint) 0 75%, transparent 0) 0 0 / 20px 20px,
-    color-mix(in oklch, var(--surface-sunken) 90%, transparent);
+    var(--surface-sunken);
 }
 
 .peek__image {
@@ -344,6 +344,9 @@
 }
 
 .peek__markdown blockquote {
+  margin-right: 0;
+  margin-bottom: 0;
+  margin-left: 0;
   padding-left: var(--s-4);
   border-left: 2px solid var(--accent);
   color: var(--ink-soft);
@@ -371,6 +374,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: var(--text-md);
+  font-variant-numeric: tabular-nums;
 }
 
 .peek__markdown th,
