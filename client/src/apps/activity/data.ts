@@ -7,7 +7,7 @@ import { create } from 'zustand';
 import type { ActivityDetail, ActivityEntry, MergeResult, WorkspaceDiff } from '@shared/protocol';
 import { api, ApiRequestError } from '../../lib/api';
 import { events } from '../../lib/events';
-import { useActivityStore } from '../../stores/activity';
+import { gathered, useActivityStore } from '../../stores/activity';
 import { useWorkspacesStore } from '../../stores/workspaces';
 
 // ---------------------------------------------------------------- journal
@@ -82,7 +82,8 @@ export const useJournal = create<JournalState>((set, get) => ({
   },
 }));
 
-events.subscribe('fs', ({ entry }) => useJournal.setState((state) => ({ entries: mergeEntries(state.entries, [entry]) })));
+const addLive = gathered<ActivityEntry>((arrived) => useJournal.setState((state) => ({ entries: mergeEntries(state.entries, arrived) })));
+events.subscribe('fs', ({ entry }) => addLive(entry));
 // Frames missed while the socket was down are in the journal: read its newest page again.
 events.subscribe('hello', () => {
   if (useJournal.getState().status !== 'idle') useJournal.getState().loadFirst();

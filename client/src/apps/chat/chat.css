@@ -318,11 +318,16 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  justify-content: center;
+  /* In a short window the words start at the top and scroll, instead of losing their headline above it. */
+  justify-content: safe center;
   min-height: 0;
   /* One column of words in the middle of the pane, the same measure in every app's empty state. */
   padding: var(--s-6) max(var(--s-8), calc((100% - 520px) / 2));
   overflow-y: auto;
+}
+
+.chat-empty > * {
+  flex: none;
 }
 
 .chat-empty__title {

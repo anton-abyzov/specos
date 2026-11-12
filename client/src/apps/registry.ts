@@ -3,7 +3,7 @@
  * client/src/apps/<id>/ with a default export that takes AppProps. The window
  * manager, dock, menu bar and launcher all read apps from here.
  */
-import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
+import { createElement, lazy, useState, type ComponentType } from 'react';
 import { APP_COLORS } from '../design/color';
 import { agentMenus } from './agent/menus';
 import { agentsMenus } from './agents/menus';
@@ -49,7 +49,9 @@ export interface AppDefinition {
   description: string;
   /** The app's own colour, as a CSS colour. */
   color: string;
-  component: LazyExoticComponent<ComponentType<AppProps>>;
+  component: ComponentType<AppProps>;
+  /** Fetches the app's code ahead of its first window. */
+  preload(): Promise<unknown>;
   defaultSize: { w: number; h: number };
   minSize: { w: number; h: number };
   /** A singleton has one window; opening it again focuses that window. */
@@ -59,13 +61,41 @@ export interface AppDefinition {
   menus?: (windowId: string) => Menu[];
 }
 
+/**
+ * An app's code, fetched once. A window opened after the code has arrived draws its app in the
+ * same frame; one opened before waits for it behind the window's skeleton.
+ */
+function appCode(load: () => Promise<{ default: ComponentType<AppProps> }>): Pick<AppDefinition, 'component' | 'preload'> {
+  let loaded: ComponentType<AppProps> | null = null;
+  let fetching: Promise<{ default: ComponentType<AppProps> }> | null = null;
+  const preload = () =>
+    (fetching ??= load().then(
+      (module) => {
+        loaded = module.default;
+        return module;
+      },
+      (error: unknown) => {
+        // The next window asks again.
+        fetching = null;
+        throw error;
+      },
+    ));
+  const Waiting = lazy(preload);
+  function component(props: AppProps) {
+    // Chosen once per window, so the app is never mounted a second time when its code arrives.
+    const [Ready] = useState(() => loaded);
+    return createElement(Ready ?? Waiting, props);
+  }
+  return { component, preload };
+}
+
 export const APPS: Record<AppId, AppDefinition> = {
   files: {
     id: 'files',
     name: 'Files',
     description: 'Browse the home folder and watch agents change it.',
     color: APP_COLORS.files,
-    component: lazy(() => import('./files/index')),
+    ...appCode(() => import('./files/index')),
     defaultSize: { w: 980, h: 620 },
     minSize: { w: 560, h: 360 },
     singleton: false,
@@ -77,7 +107,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     name: 'Terminal',
     description: 'A real shell on this machine.',
     color: APP_COLORS.terminal,
-    component: lazy(() => import('./terminal/index')),
+    ...appCode(() => import('./terminal/index')),
     defaultSize: { w: 820, h: 520 },
     minSize: { w: 420, h: 260 },
     singleton: false,
@@ -89,7 +119,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     name: 'Editor',
     description: 'Edit a file and save it back to disk.',
     color: APP_COLORS.editor,
-    component: lazy(() => import('./editor/index')),
+    ...appCode(() => import('./editor/index')),
     defaultSize: { w: 900, h: 640 },
     minSize: { w: 480, h: 320 },
     singleton: false,
@@ -101,7 +131,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     name: 'Chat',
     description: 'Give an agent a job in plain words.',
     color: APP_COLORS.chat,
-    component: lazy(() => import('./chat/index')),
+    ...appCode(() => import('./chat/index')),
     defaultSize: { w: 920, h: 700 },
     minSize: { w: 440, h: 400 },
     singleton: true,
@@ -113,7 +143,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     name: 'Agents',
     description: 'Every agent job, its workspace and the files it touched.',
     color: APP_COLORS.agents,
-    component: lazy(() => import('./agents/index')),
+    ...appCode(() => import('./agents/index')),
     defaultSize: { w: 960, h: 640 },
     minSize: { w: 520, h: 360 },
     singleton: true,
@@ -125,7 +155,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     name: 'Activity',
     description: 'Every file change, who made it, and the diff.',
     color: APP_COLORS.activity,
-    component: lazy(() => import('./activity/index')),
+    ...appCode(() => import('./activity/index')),
     defaultSize: { w: 1040, h: 660 },
     minSize: { w: 560, h: 360 },
     singleton: true,
@@ -137,7 +167,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     name: 'System',
     description: 'This machine, and how fast it gives an agent its own copy.',
     color: APP_COLORS.system,
-    component: lazy(() => import('./system/index')),
+    ...appCode(() => import('./system/index')),
     defaultSize: { w: 900, h: 800 },
     minSize: { w: 520, h: 420 },
     singleton: true,
@@ -149,7 +179,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     name: 'Agent',
     description: 'One agent job, live.',
     color: APP_COLORS.agent,
-    component: lazy(() => import('./agent/index')),
+    ...appCode(() => import('./agent/index')),
     defaultSize: { w: 760, h: 600 },
     minSize: { w: 420, h: 320 },
     singleton: false,
@@ -176,15 +206,5 @@ export function getApp(id: AppId): AppDefinition {
  * already drawn instead of an empty body. A failed fetch is left for the window to report.
  */
 export function preloadApps(): void {
-  const modules = [
-    import('./files/index'),
-    import('./terminal/index'),
-    import('./editor/index'),
-    import('./chat/index'),
-    import('./agents/index'),
-    import('./activity/index'),
-    import('./system/index'),
-    import('./agent/index'),
-  ];
-  for (const module of modules) module.catch(() => undefined);
+  for (const id of APP_IDS) APPS[id].preload().catch(() => undefined);
 }

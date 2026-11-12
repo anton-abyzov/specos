@@ -730,10 +730,18 @@
 }
 
 .act-pane__folder {
-  min-width: 0;
+  /* The folder gives way first; the sentence after it only when the folder is down to its ellipsis. */
+  flex-shrink: 100;
+  min-width: 2ch;
   overflow: hidden;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
+  text-overflow: ellipsis;
+}
+
+.act-pane__sub > span:last-child {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 

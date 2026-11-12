@@ -452,7 +452,9 @@ export default function FilesApp({ windowId, params, setTitle, focused }: AppPro
   // A new column slides into view at the right end, and the column at the left edge is always whole:
   // when the row is wider than the window, a gap before the details makes up the difference.
   const columnKey = `${folder}\n${preview ?? ''}\n${selectedEntry ? 'details' : ''}`;
-  const firstScroll = useRef(true);
+  // Until someone uses the window its columns are simply put in place: a window that opens on a
+  // deep folder does not slide there while its folders arrive. After that, a new column slides in.
+  const placing = useRef(true);
   const rest = useRef<HTMLDivElement>(null);
   const alignColumns = useCallback((instant: boolean) => {
     const [element, gap] = [scroller.current, rest.current];
@@ -469,9 +471,21 @@ export default function FilesApp({ windowId, params, setTitle, focused }: AppPro
     element.scrollTo({ left, behavior: instant ? 'auto' : 'smooth' });
   }, []);
   useLayoutEffect(() => {
-    alignColumns(firstScroll.current || prefersReducedMotion());
-    firstScroll.current = false;
+    alignColumns(placing.current || prefersReducedMotion());
   }, [columnKey, alignColumns]);
+  useEffect(() => {
+    const element = root.current;
+    if (!element) return;
+    const used = () => {
+      placing.current = false;
+    };
+    element.addEventListener('pointerdown', used, { capture: true, once: true });
+    element.addEventListener('keydown', used, { capture: true, once: true });
+    return () => {
+      element.removeEventListener('pointerdown', used, { capture: true });
+      element.removeEventListener('keydown', used, { capture: true });
+    };
+  }, []);
   // The window was resized: the same columns, lined up again.
   useEffect(() => {
     const element = scroller.current;

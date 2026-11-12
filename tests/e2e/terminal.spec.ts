@@ -300,8 +300,15 @@ test('colourful output, for the screenshots', async ({ page }) => {
     'for c in 0 1 2 3 4 5 6 7; do printf "\\e[4${c}m   \\e[10${c}m   "; done; printf "\\e[0m\\n"',
   ];
   for (const command of commands) {
+    // The prompt that was already there does not count: the screen has to change first.
+    const before = await screen(page, id);
     await run(page, command);
-    await expect.poll(async () => (await screen(page, id)).trimEnd().split('\n').pop()).toMatch(/\$$/);
+    await expect
+      .poll(async () => {
+        const now = await screen(page, id);
+        return now !== before && /\$$/.test(now.trimEnd().split('\n').pop() ?? '');
+      })
+      .toBe(true);
   }
   await expect.poll(() => screen(page, id)).toContain('Add the build script');
   await expect.poll(async () => (await screen(page, id)).match(/tone/g)?.length ?? 0).toBeGreaterThanOrEqual(8);
