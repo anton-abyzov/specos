@@ -222,7 +222,9 @@ function OverviewSurface() {
             >
               <span className="overview__label">
                 <AppIcon id={win.appId} size={tile.minimized ? 14 : 16} />
-                <span className="overview__label-text">{win.title}</span>
+                {/* The app's name says what kind of window it is; an agent's window is named after the agent alone. */}
+                {win.appId !== 'agent' && <span className="overview__label-app">{getApp(win.appId).name}</span>}
+                {win.title !== getApp(win.appId).name && <span className="overview__label-text">{win.title}</span>}
               </span>
             </button>
           );

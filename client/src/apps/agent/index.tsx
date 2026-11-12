@@ -29,7 +29,8 @@ function touchedBy(chain: AgentInfo[]): TouchedFile[] {
 
 function Unavailable({ windowId }: { windowId: string }) {
   return (
-    <section className="agent-gone" data-testid="agent-gone">
+    <section className="agent-app" data-testid="app-agent" data-status="gone">
+      <div className="agent-gone" data-testid="agent-gone">
       <Glyph name="agent" size={28} />
       <h1 className="agent-gone__title">This job is no longer available</h1>
       <p className="agent-gone__text">
@@ -42,6 +43,7 @@ function Unavailable({ windowId }: { windowId: string }) {
         data-testid="agent-gone-close"
         onClick={() => useWindowsStore.getState().close(windowId)}
       />
+      </div>
     </section>
   );
 }

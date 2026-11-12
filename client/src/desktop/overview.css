@@ -152,6 +152,16 @@
   line-height: 1.3;
 }
 
+.overview__label-app {
+  flex: none;
+}
+
+/* The window's own title follows the app's name, quieter. */
+.overview__label-app + .overview__label-text {
+  color: var(--ink-muted);
+  font-weight: var(--weight-regular);
+}
+
 .overview__label-text {
   overflow: hidden;
   text-overflow: ellipsis;
