@@ -294,6 +294,12 @@
   overscroll-behavior: contain;
 }
 
+/* Makes up the width when the columns are lined up to the left edge; sized by the window. */
+.files-columns__rest {
+  flex: none;
+  width: 0;
+}
+
 .files-columns[data-scrolled] {
   mask-image: linear-gradient(to right, transparent, #000 20px);
 }

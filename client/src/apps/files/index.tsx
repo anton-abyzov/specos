@@ -449,16 +449,42 @@ export default function FilesApp({ windowId, params, setTitle, focused }: AppPro
     if (focused && !root.current?.contains(document.activeElement)) focusRoot();
   }, [focused, focusRoot]);
 
-  // A new column slides into view at the right end.
+  // A new column slides into view at the right end, and the column at the left edge is always whole:
+  // when the row is wider than the window, a gap before the details makes up the difference.
   const columnKey = `${folder}\n${preview ?? ''}\n${selectedEntry ? 'details' : ''}`;
   const firstScroll = useRef(true);
+  const rest = useRef<HTMLDivElement>(null);
+  const alignColumns = useCallback((instant: boolean) => {
+    const [element, gap] = [scroller.current, rest.current];
+    if (!element || !gap) return;
+    gap.style.width = '0px';
+    const overflow = element.scrollWidth - element.clientWidth;
+    let left = 0;
+    if (overflow > 0) {
+      const origin = (element.firstElementChild as HTMLElement).offsetLeft;
+      const starts = [...element.querySelectorAll<HTMLElement>(':scope > .files-column')].map((column) => column.offsetLeft - origin);
+      left = starts.find((start) => start >= overflow) ?? overflow;
+      gap.style.width = `${left - overflow}px`;
+    }
+    element.scrollTo({ left, behavior: instant ? 'auto' : 'smooth' });
+  }, []);
   useLayoutEffect(() => {
+    alignColumns(firstScroll.current || prefersReducedMotion());
+    firstScroll.current = false;
+  }, [columnKey, alignColumns]);
+  // The window was resized: the same columns, lined up again.
+  useEffect(() => {
     const element = scroller.current;
     if (!element) return;
-    const instant = firstScroll.current || prefersReducedMotion();
-    firstScroll.current = false;
-    element.scrollTo({ left: element.scrollWidth, behavior: instant ? 'auto' : 'smooth' });
-  }, [columnKey]);
+    let width = element.clientWidth;
+    const observer = new ResizeObserver(() => {
+      if (element.clientWidth === width) return;
+      width = element.clientWidth;
+      alignColumns(true);
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [alignColumns]);
 
   // ---------------------------------------------------------------- context menu
 
@@ -607,8 +633,15 @@ export default function FilesApp({ windowId, params, setTitle, focused }: AppPro
           className="files-columns"
           ref={scroller}
           data-testid="files-columns"
-          // Columns that have slid out to the left fade at the edge instead of ending in a sliver.
-          onScroll={(event) => event.currentTarget.toggleAttribute('data-scrolled', event.currentTarget.scrollLeft > 0)}
+          // A column scrolled part of the way out by hand fades at the edge instead of ending in a sliver.
+          onScroll={(event) => {
+            const element = event.currentTarget;
+            const origin = (element.firstElementChild as HTMLElement).offsetLeft;
+            const whole = [...element.querySelectorAll<HTMLElement>(':scope > .files-column')].some(
+              (column) => Math.abs(column.offsetLeft - origin - element.scrollLeft) < 1,
+            );
+            element.toggleAttribute('data-scrolled', !whole);
+          }}
         >
           {columns.map((path, index) => (
             <Column
@@ -623,6 +656,7 @@ export default function FilesApp({ windowId, params, setTitle, focused }: AppPro
               actions={actions}
             />
           ))}
+          <div className="files-columns__rest" ref={rest} aria-hidden="true" />
           {selectedEntry && (
             <Details
               key="details"
