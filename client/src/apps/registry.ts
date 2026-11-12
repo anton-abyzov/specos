@@ -5,6 +5,7 @@
  */
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { APP_COLORS } from '../design/color';
+import { terminalMenus } from './terminal/menus';
 
 export type AppId = 'files' | 'terminal' | 'editor' | 'chat' | 'agents' | 'activity' | 'system' | 'agent';
 
@@ -73,6 +74,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     minSize: { w: 420, h: 260 },
     singleton: false,
     inDock: true,
+    menus: terminalMenus,
   },
   editor: {
     id: 'editor',

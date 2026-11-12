@@ -93,6 +93,8 @@ function OverviewSurface() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey || event.metaKey || event.altKey) return;
+      // While it fades out the keys already belong to the window behind it.
+      if (!useWindowsStore.getState().overviewOpen) return;
       if (event.key === 'Escape') close();
       else if (event.key === 'Enter' && selectedId) show(selectedId);
       else if (event.key.startsWith('Arrow')) setSelected(neighbour(tiles, selectedId, event.key as Direction));

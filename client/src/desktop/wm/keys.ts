@@ -60,6 +60,8 @@ function shortcut(event: KeyboardEvent): boolean {
     return true;
   }
   if (shift || !focused) return false;
+  // Inside a terminal Ctrl+W and Ctrl+M belong to the shell; Cmd+W and the Window menu still close it.
+  if (ctrl && !meta && event.target instanceof Element && event.target.closest('.xterm')) return false;
   if (code === 'KeyW' && (ctrl || meta)) {
     state.close(focused.id);
     return true;
