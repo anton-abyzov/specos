@@ -3,7 +3,7 @@ import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { E2E_HOME, login, shots, trackErrors } from './helpers';
 
-const PROJECT = 'Projects/atlas';
+const PROJECT = 'Projects/meridian';
 const NOTE = `${PROJECT}/notes.md`;
 const CONFIG = `${PROJECT}/config.json`;
 

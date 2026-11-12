@@ -10,8 +10,9 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  reporter: [['list'], ['html', { open: 'never', outputFolder: '.e2e/report' }]],
-  outputDir: '.e2e/results',
+  reporter: [['list'], ['html', { open: 'never', outputFolder: `.e2e/report-${port}` }]],
+  // Per port, so runs side by side never delete each other's traces.
+  outputDir: `.e2e/results-${port}`,
   use: {
     baseURL: `http://127.0.0.1:${port}`,
     headless: true,

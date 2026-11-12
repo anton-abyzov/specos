@@ -93,8 +93,8 @@ test('an agent is a process: a card, a window, a dock icon, files, attachments a
   const errors = trackErrors(page);
   await login(page);
   await clearAgents(page);
-  await writeHomeFile(page, 'Projects/atlas/note.md', '# Notes\n\nA first line.\n');
-  await writeHomeFile(page, 'Projects/atlas/plan.md', '# Plan\n\nNothing yet.\n');
+  await writeHomeFile(page, 'Projects/ledger/note.md', '# Notes\n\nA first line.\n');
+  await writeHomeFile(page, 'Projects/ledger/plan.md', '# Plan\n\nNothing yet.\n');
   await writeHomeFile(page, 'brief.md', '# Brief\n\nKeep it short.\n');
 
   const agents = await openAgents(page);
@@ -103,9 +103,9 @@ test('an agent is a process: a card, a window, a dock icon, files, attachments a
 
   // The project is chosen once, from the chip beside the prompt.
   await agents.getByTestId('project-chip').click();
-  await page.keyboard.type('atlas');
+  await page.keyboard.type('ledger');
   await page.keyboard.press('Enter');
-  await expect(agents.getByTestId('project-chip')).toHaveText('atlas');
+  await expect(agents.getByTestId('project-chip')).toHaveText('ledger');
   await expect(agents.getByTestId('agents-new-prompt')).toBeFocused();
 
   // Starting a job opens its own window with the live stream.
@@ -126,7 +126,7 @@ test('an agent is a process: a card, a window, a dock icon, files, attachments a
   await expect(card).toHaveAttribute('data-status', 'running');
   await expect(card.getByTestId('agent-status')).toHaveText('running');
   await expect(card.getByTestId('agent-runner')).toHaveText('demo');
-  await expect(card.getByTestId('card-workspace')).toHaveText(/atlas-[\w-]+\s*(worktree|reflink|copy) · [\d.]+ (ms|s) · [\d.]+ (B|KB|MB)/);
+  await expect(card.getByTestId('card-workspace')).toHaveText(/ledger-[\w-]+\s*(worktree|reflink|copy) · [\d.]+ (ms|s) · [\d.]+ (B|KB|MB)/);
   const clock = await card.getByTestId('agent-elapsed').textContent();
 
   // A second agent beside it, on the same project, in its own window.
@@ -185,14 +185,14 @@ test('an agent is a process: a card, a window, a dock icon, files, attachments a
   await expect(page.getByTestId(`dock-agent-${first.id}`)).toBeVisible();
 
   // Merge back: the project on disk gains the agent's lines.
-  const project = path.join(E2E_HOME, 'Projects/atlas/note.md');
+  const project = path.join(E2E_HOME, 'Projects/ledger/note.md');
   expect(fs.readFileSync(project, 'utf8')).not.toContain(`- ${name} (1/`);
   await openAgents(page);
   await card.getByTestId('card-merge').click();
   await expect(card.getByTestId('merge-result')).toHaveAttribute('data-merged', 'true');
-  await expect(card.getByTestId('merge-result')).toContainText('Merged 2 files into atlas');
+  await expect(card.getByTestId('merge-result')).toContainText('Merged 2 files into ledger');
   expect(fs.readFileSync(project, 'utf8')).toContain(`- ${name} (1/`);
-  expect(fs.readFileSync(path.join(E2E_HOME, 'Projects/atlas/plan.md'), 'utf8')).toContain(`- ${name} (1/`);
+  expect(fs.readFileSync(path.join(E2E_HOME, 'Projects/ledger/plan.md'), 'utf8')).toContain(`- ${name} (1/`);
   await expect(card.getByTestId('card-workspace')).toContainText('merged');
   await shots(page, 'T-21-agents-merged');
 
