@@ -24,6 +24,7 @@ import {
   type Size,
   type SnapZone,
 } from './geometry';
+import { mayClose } from './close-guard';
 import { loadLayout, type SavedLayout } from './persistence';
 
 export type WindowMode = 'normal' | 'minimized' | 'fullscreen' | 'snapped';
@@ -71,7 +72,8 @@ export interface WindowsState {
 
   /** Opens a window, or focuses the one that already shows the same thing. Returns its id. */
   open(appId: AppId, params?: Record<string, unknown>): string;
-  close(id: string): void;
+  /** Closes a window. An app's close guard may keep it open unless `force` is set. */
+  close(id: string, force?: boolean): void;
   /** Brings a window to the front, restoring it if minimised and switching to its desktop. */
   focus(id: string): void;
   /** Puts the desktop itself in front. */
@@ -288,7 +290,8 @@ export const useWindowsStore = create<WindowsState>((set, get) => {
       return id;
     },
 
-    close(id) {
+    close(id, force = false) {
+      if (!force && !mayClose(id)) return;
       update((state) => {
         if (!state.windows[id]) return {};
         const { [id]: _closed, ...windows } = state.windows;

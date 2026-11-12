@@ -1,0 +1,648 @@
+/* The Editor: one file on the window's paper, a slim status line, and a page beside it for Markdown. */
+
+.editor {
+  /* Syntax colours, tuned for paper. They share their hues with the terminal's palette. */
+  --code-keyword: #b5321a;
+  --code-string: #17714a;
+  --code-regexp: #0c6f7e;
+  --code-number: #96600a;
+  --code-constant: #8a3a9e;
+  --code-comment: #7f7a6f;
+  --code-type: #0c6f7e;
+  --code-function: #2a5db0;
+  --code-definition: #1b1a17;
+  --code-property: #4a4740;
+  --code-punctuation: #625e56;
+  --code-meta: #8a3a9e;
+  --code-active-line: rgb(27 26 23 / 0.04);
+  --code-match: rgb(42 93 176 / 0.14);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+[data-theme='dark'] .editor {
+  --code-keyword: #ff8a73;
+  --code-string: #6bd9a6;
+  --code-regexp: #4fc3d0;
+  --code-number: #f2c263;
+  --code-constant: #d9abf9;
+  --code-comment: #807d75;
+  --code-type: #6fd0db;
+  --code-function: #95c2ff;
+  --code-definition: #ece9e2;
+  --code-property: #cfcbc2;
+  --code-punctuation: #9a968c;
+  --code-meta: #c58af0;
+  --code-active-line: rgb(236 233 226 / 0.045);
+  --code-match: rgb(149 194 255 / 0.18);
+}
+
+.editor__main {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.editor__code {
+  flex: 1 1 50%;
+  min-width: 0;
+  cursor: text;
+}
+
+/* CodeMirror selects its own text; the desktop's "no selection" default does not apply inside it. */
+.editor__code .cm-content {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+@keyframes editor-line-flash {
+  from {
+    background-color: var(--flash-soft);
+    box-shadow: inset 2px 0 0 var(--flash-solid);
+  }
+  60% {
+    box-shadow: inset 2px 0 0 var(--flash-solid);
+  }
+  to {
+    background-color: transparent;
+    box-shadow: inset 2px 0 0 transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No fade: the mark simply stays until it is cleared. */
+  .editor__code .cm-line.cm-flash {
+    animation: none !important;
+    background-color: var(--flash-soft);
+    box-shadow: inset 2px 0 0 var(--flash-solid);
+  }
+}
+
+/* ---------------------------------------------------------------- status line */
+
+.editor__status {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--s-4);
+  height: 28px;
+  padding: 0 var(--s-3) 0 14px;
+  border-top: 1px solid var(--hairline);
+  background: var(--surface-sunken);
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.editor__path {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+}
+
+.editor__folder {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink-faint);
+  text-overflow: ellipsis;
+}
+
+.editor__name {
+  flex: none;
+  color: var(--ink-soft);
+}
+
+.editor__fact {
+  flex: none;
+}
+
+.editor__fact--cursor {
+  min-width: 5ch;
+  font-family: var(--font-mono);
+  text-align: right;
+}
+
+.editor__saved {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  min-width: 58px;
+  color: var(--ink-soft);
+}
+
+.editor__saved-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-full);
+  background: var(--success);
+  transition: background-color var(--t-base) var(--ease-out);
+}
+
+.editor__saved[data-state='edited'] .editor__saved-dot {
+  background: var(--accent);
+}
+
+.editor__saved[data-state='failed'] .editor__saved-dot,
+.editor__saved[data-state='deleted'] .editor__saved-dot {
+  background: var(--warning);
+}
+
+.editor__toggle {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  height: 20px;
+  padding: 0 8px 0 6px;
+  border-radius: var(--r-xs);
+  color: var(--ink-muted);
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+}
+
+.editor__toggle:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.editor__toggle[aria-pressed='true'] {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+/* ---------------------------------------------------------------- buttons */
+
+.editor-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--s-2);
+  height: 28px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--hover);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+}
+
+.editor-button:hover {
+  background: var(--pressed);
+  color: var(--ink);
+}
+
+.editor-button--primary {
+  --chamfer: 7px;
+  background: var(--accent-fill);
+  clip-path: var(--clip-chamfer);
+  color: var(--on-accent);
+}
+
+.editor-button--primary:hover {
+  background: var(--accent-hover);
+  color: var(--on-accent);
+}
+
+/* A clipped shape would cut an outer ring, so the ring is drawn inside. */
+.editor-button--primary:focus-visible {
+  outline: 2px solid var(--on-accent);
+  outline-offset: -4px;
+}
+
+.editor-button kbd {
+  padding: 1px 6px;
+  border-radius: var(--r-xs);
+  background: rgb(255 255 255 / 0.2);
+  font-size: var(--text-2xs);
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------- banner */
+
+.editor-banner {
+  --banner-mark: var(--warning);
+  --banner-name: var(--ink);
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 40px;
+  padding: 6px var(--s-2) 6px 14px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface-sunken);
+  font-size: var(--text-sm);
+}
+
+.editor-banner__mark {
+  flex: none;
+  align-self: stretch;
+  width: 3px;
+  margin: 2px 4px 2px 0;
+  border-radius: var(--r-full);
+  background: var(--banner-mark);
+}
+
+.editor-banner__text {
+  flex: 1;
+  min-width: 0;
+  color: var(--ink-soft);
+  line-height: var(--leading-snug);
+}
+
+.editor-banner__text strong {
+  color: var(--banner-name);
+  font-weight: var(--weight-semibold);
+}
+
+/* ---------------------------------------------------------------- the question before closing */
+
+.editor-ask {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: var(--s-6);
+  /* Dimmed, not blurred: the text about to be lost stays readable behind the question. */
+  background: var(--scrim);
+  animation: editor-ask-in var(--t-base) var(--ease-out) both;
+}
+
+.editor-ask__panel {
+  width: min(100%, 440px);
+  padding: var(--s-5) var(--s-5) var(--s-4);
+  border-radius: var(--r-lg);
+  background: var(--surface-raised);
+  box-shadow:
+    0 0 0 1px var(--hairline-strong),
+    var(--shadow-md);
+}
+
+.editor-ask__title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.editor-ask__text {
+  margin-top: var(--s-2);
+  color: var(--ink-muted);
+}
+
+.editor-ask__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  margin-top: var(--s-5);
+}
+
+.editor-ask__actions > :first-child {
+  margin-right: auto;
+}
+
+@keyframes editor-ask-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ---------------------------------------------------------------- no file yet */
+
+.editor--empty,
+.editor--refused {
+  overflow: auto;
+}
+
+.editor-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: min(100%, 520px);
+  margin: auto;
+  padding: var(--s-10) var(--s-8);
+}
+
+.editor-empty .app-icon {
+  filter: drop-shadow(0 4px 8px rgb(40 30 15 / 0.18));
+}
+
+.editor-empty__title {
+  margin-top: var(--s-5);
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.015em;
+}
+
+.editor-empty__text {
+  max-width: 48ch;
+  margin: var(--s-2) 0 var(--s-5);
+  color: var(--ink-muted);
+}
+
+.editor-empty__recent {
+  align-self: stretch;
+  margin-top: var(--s-8);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--hairline);
+}
+
+.editor-empty__recent h2 {
+  margin-bottom: var(--s-2);
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.editor-empty__none {
+  color: var(--ink-faint);
+  font-size: var(--text-sm);
+}
+
+.editor-empty__recent ul {
+  margin: 0 calc(var(--s-2) * -1);
+}
+
+.editor-empty__recent li {
+  position: relative;
+  display: flex;
+}
+
+.editor-recent {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+  height: 32px;
+  padding: 0 34px 0 var(--s-2);
+  border-radius: var(--r-sm);
+  color: var(--ink-muted);
+  text-align: left;
+}
+
+.editor-recent:hover,
+.editor-recent:focus-visible {
+  background: var(--hover);
+}
+
+.editor-recent:focus-visible {
+  outline-offset: -2px;
+}
+
+.editor-recent svg {
+  flex: none;
+}
+
+.editor-recent__name {
+  flex: none;
+  max-width: 60%;
+  overflow: hidden;
+  color: var(--ink);
+  font-weight: var(--weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-recent__folder {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editor-recent__forget {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-xs);
+  color: var(--ink-faint);
+  opacity: 0;
+}
+
+.editor-empty__recent li:hover .editor-recent__forget,
+.editor-recent__forget:focus-visible {
+  opacity: 1;
+}
+
+.editor-recent__forget:hover {
+  background: var(--pressed);
+  color: var(--ink);
+}
+
+/* ---------------------------------------------------------------- a file that is not shown */
+
+.editor-refused {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  width: min(100%, 520px);
+  margin: 0 auto;
+  padding: var(--s-8);
+}
+
+.editor-refused__mark {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-md);
+  background: var(--hover);
+  color: var(--ink-muted);
+}
+
+.editor-refused__title {
+  margin-top: var(--s-4);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
+}
+
+.editor-refused__text {
+  max-width: 52ch;
+  margin-top: var(--s-2);
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+
+.editor-refused__actions {
+  display: flex;
+  gap: var(--s-2);
+  margin-top: var(--s-5);
+}
+
+/* ---------------------------------------------------------------- Markdown preview */
+
+.editor-preview {
+  flex: 1 1 50%;
+  min-width: 0;
+  overflow: auto;
+  border-left: 1px solid var(--hairline);
+  background: var(--surface-sunken);
+}
+
+.editor-preview__empty {
+  padding: 28px 32px 0;
+  color: var(--ink-faint);
+}
+
+.editor-preview__page {
+  max-width: 72ch;
+  padding: 26px 32px 96px;
+  color: var(--ink-soft);
+  font-size: 14.5px;
+  line-height: 1.62;
+  overflow-wrap: break-word;
+}
+
+.editor-preview__page > :first-child {
+  margin-top: 0;
+}
+
+.editor-preview__page :is(h1, h2, h3, h4) {
+  margin: 1.5em 0 0.5em;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.012em;
+}
+
+.editor-preview__page h1 {
+  font-size: 28px;
+}
+.editor-preview__page h2 {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 20px;
+}
+.editor-preview__page h3 {
+  font-size: 16.5px;
+}
+.editor-preview__page h4 {
+  font-size: 14.5px;
+}
+
+.editor-preview__page :is(p, ul, ol, pre, blockquote, table) {
+  margin: 0 0 0.9em;
+}
+
+.editor-preview__page :is(ul, ol) {
+  padding-left: 1.4em;
+}
+.editor-preview__page ul {
+  list-style: disc;
+}
+.editor-preview__page ol {
+  list-style: decimal;
+}
+.editor-preview__page li {
+  margin: 0.2em 0;
+}
+.editor-preview__page li::marker {
+  color: var(--ink-faint);
+}
+.editor-preview__page li:has(> input[type='checkbox']) {
+  margin-left: -1.4em;
+  list-style: none;
+}
+.editor-preview__page input[type='checkbox'] {
+  margin: 0 0.5em 0 0;
+  accent-color: var(--accent-fill);
+  vertical-align: -1px;
+}
+
+.editor-preview__page strong {
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+}
+
+.editor-preview__page code {
+  padding: 1px 5px;
+  border-radius: var(--r-xs);
+  background: var(--hover);
+  font-size: 0.88em;
+}
+
+.editor-preview__page pre {
+  padding: var(--s-3) var(--s-4);
+  overflow-x: auto;
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  line-height: 1.55;
+}
+
+.editor-preview__page pre code {
+  padding: 0;
+  background: none;
+  font-size: 12.5px;
+}
+
+.editor-preview__page blockquote {
+  padding-left: var(--s-4);
+  border-left: 2px solid var(--accent);
+  color: var(--ink-muted);
+}
+
+.editor-preview__page hr {
+  height: 1px;
+  margin: 1.6em 0;
+  border: 0;
+  background: var(--hairline-strong);
+}
+
+.editor-preview__page img {
+  max-width: 100%;
+  border-radius: var(--r-sm);
+}
+
+.editor-preview__page table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-md);
+}
+
+.editor-preview__page :is(th, td) {
+  padding: 6px 10px 6px 0;
+  border-bottom: 1px solid var(--hairline);
+  text-align: left;
+  vertical-align: top;
+}
+
+.editor-preview__page th {
+  border-bottom-color: var(--hairline-strong);
+  color: var(--ink);
+  font-weight: var(--weight-semibold);
+}

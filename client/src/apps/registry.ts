@@ -9,6 +9,7 @@ import { activityMenus } from './activity/menus';
 import { agentMenus } from './agent/menus';
 import { agentsMenus } from './agents/menus';
 import { chatMenus } from './chat/menus';
+import { editorMenus } from './editor/menus';
 import { terminalMenus } from './terminal/menus';
 
 export type AppId = 'files' | 'terminal' | 'editor' | 'chat' | 'agents' | 'activity' | 'system' | 'agent';
@@ -90,6 +91,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     minSize: { w: 480, h: 320 },
     singleton: false,
     inDock: true,
+    menus: editorMenus,
   },
   chat: {
     id: 'chat',
