@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './design/base.css';
 import { App } from './App';
+import { preloadApps } from './apps/registry';
 import { startEvents } from './lib/events';
 
 // Outside React on purpose: the socket lives as long as the page, not as long as a component.
@@ -12,3 +13,7 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 );
+
+// Once the desktop is drawn and the page is idle, so the first window of each app opens complete.
+if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(preloadApps, { timeout: 3000 });
+else window.setTimeout(preloadApps, 1200);

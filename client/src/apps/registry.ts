@@ -170,3 +170,21 @@ export function isAppId(value: string): value is AppId {
 export function getApp(id: AppId): AppDefinition {
   return APPS[id];
 }
+
+/**
+ * Fetches every app's code ahead of its first window, so a window opens with its app
+ * already drawn instead of an empty body. A failed fetch is left for the window to report.
+ */
+export function preloadApps(): void {
+  const modules = [
+    import('./files/index'),
+    import('./terminal/index'),
+    import('./editor/index'),
+    import('./chat/index'),
+    import('./agents/index'),
+    import('./activity/index'),
+    import('./system/index'),
+    import('./agent/index'),
+  ];
+  for (const module of modules) module.catch(() => undefined);
+}
