@@ -320,7 +320,8 @@
   flex-direction: column;
   justify-content: center;
   min-height: 0;
-  padding: var(--s-6) var(--s-8);
+  /* One column of words in the middle of the pane, the same measure in every app's empty state. */
+  padding: var(--s-6) max(var(--s-8), calc((100% - 520px) / 2));
   overflow-y: auto;
 }
 

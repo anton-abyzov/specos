@@ -376,7 +376,7 @@
   align-items: flex-start;
   justify-content: center;
   min-height: 0;
-  padding: var(--s-6) var(--s-10);
+  padding: var(--s-6) max(var(--s-8), calc((100% - 520px) / 2));
 }
 
 .agents__empty-title {
