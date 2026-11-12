@@ -199,9 +199,19 @@ test('a change from outside reloads a clean buffer in place and marks the change
       .locator('.cm-line')
       .filter({ hasText: new RegExp(`^${text}$`) })
       .evaluate((element) => Math.round(element.getBoundingClientRect().top));
+  const scrollTop = () => page.evaluate((windowId) => (window.__specos!.editors as Record<string, any>)[windowId].scrollDOM.scrollTop as number, id);
+  await expect.poll(scrollTop).toBeGreaterThanOrEqual(1200);
+  // On the first jump this far CodeMirror measures the lines it had only estimated and moves the
+  // scroll position by a few pixels to keep the text still. The view is compared once that has come to rest.
+  let rest = -1;
   await expect
-    .poll(() => page.evaluate((windowId) => (window.__specos!.editors as Record<string, any>)[windowId].scrollDOM.scrollTop, id))
-    .toBe(1200);
+    .poll(async () => {
+      const now = await scrollTop();
+      const still = now === rest;
+      rest = now;
+      return still;
+    })
+    .toBe(true);
   await page.waitForTimeout(150);
   const before = { line80: await topOf('step 80'), line90: await topOf('step 90') };
 
