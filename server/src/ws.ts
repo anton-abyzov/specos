@@ -20,7 +20,6 @@ export interface SocketRegistry {
 }
 
 const EVENTS_PATH = '/ws';
-const HEARTBEAT_MS = 30_000;
 /** How long a socket gets to answer the closing handshake on shutdown before it is cut. */
 const CLOSE_GRACE_MS = 1000;
 /** Frames from the desktop are keystrokes and resizes; nothing legitimate comes close to this. */
@@ -51,6 +50,9 @@ export function registerWs(app: FastifyInstance, ctx: Ctx): void {
   // noServer: the upgrade is ours to accept or refuse, ws only speaks the protocol afterwards.
   const wss = new WebSocketServer({ noServer: true, maxPayload: MAX_FRAME_BYTES });
 
+  // --- heartbeat: a laptop that went to sleep never says goodbye ---
+  const unanswered = new WeakSet<WebSocket>();
+
   const onUpgrade = (request: IncomingMessage, socket: Duplex, head: Buffer): void => {
     socket.on('error', () => socket.destroy());
     const pathname = (request.url ?? '').split('?', 1)[0] ?? '';
@@ -64,14 +66,14 @@ export function registerWs(app: FastifyInstance, ctx: Ctx): void {
     wss.handleUpgrade(request, socket, head, (client) => {
       // A protocol error from the peer must end that socket, not the process.
       client.on('error', () => client.terminate());
+      // Attached here: with noServer nothing emits 'connection', and a socket whose answers
+      // went unheard would be cut at the second ping however alive it was.
+      client.on('pong', () => unanswered.delete(client));
       handler(client, request);
     });
   };
   app.server.on('upgrade', onUpgrade);
 
-  // --- heartbeat: a laptop that went to sleep never says goodbye ---
-  const unanswered = new WeakSet<WebSocket>();
-  wss.on('connection', (client) => client.on('pong', () => unanswered.delete(client)));
   const heartbeat = setInterval(() => {
     for (const client of wss.clients) {
       if (unanswered.has(client)) {
@@ -81,7 +83,7 @@ export function registerWs(app: FastifyInstance, ctx: Ctx): void {
       unanswered.add(client);
       client.ping();
     }
-  }, HEARTBEAT_MS);
+  }, ctx.config.heartbeatMs);
   heartbeat.unref();
 
   // --- the events socket: one stream of everything that happens, for every open desktop ---

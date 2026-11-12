@@ -23,6 +23,8 @@ export interface Config {
   claudeCommand: string;
   /** How many times faster than real time the demo agent works. 1 is the pace meant for watching. */
   demoSpeed: number;
+  /** How often every socket is pinged. One that has not answered by the next ping is cut. */
+  heartbeatMs: number;
   /** Repository root. */
   root: string;
 }
@@ -40,6 +42,7 @@ export function loadConfig(overrides: Partial<Config> = {}, env: NodeJS.ProcessE
     claudeArgs: env.SPECOS_CLAUDE_ARGS ? env.SPECOS_CLAUDE_ARGS.split(' ').filter(Boolean) : [],
     claudeCommand: env.SPECOS_CLAUDE_BIN || 'claude',
     demoSpeed: Number(env.SPECOS_DEMO_SPEED) > 0 ? Number(env.SPECOS_DEMO_SPEED) : 1,
+    heartbeatMs: 30_000,
     root,
     ...overrides,
   };
