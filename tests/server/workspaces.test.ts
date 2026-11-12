@@ -719,3 +719,25 @@ describe('the clone benchmark', () => {
     expect(fs.readdirSync(inHome('Workspaces')).filter((name) => name.startsWith(`${project.name}-bench`))).toEqual([]);
   });
 });
+
+
+test.each(['copy', 'reflink'] as const)('cloning a linked worktree via %s keeps source metadata independent', async (strategy) => {
+  if (strategy === 'reflink' && process.platform !== 'linux') return;
+  const source = makeProject();
+  const base = await workspaces.create({ project: source.rel, strategy: 'worktree' });
+  const linked = path.join(server.home, 'Projects', `linked-${strategy}`);
+  git(source.abs, 'worktree', 'add', '-b', `imported-${strategy}`, linked, base.baseRef);
+  fs.writeFileSync(path.join(linked, 'note.md'), 'Imported project content\n');
+  const clone = await workspaces.create({ project: `Projects/linked-${strategy}`, strategy });
+  const target = inHome(clone.path);
+  expect(git(linked, 'branch', '--show-current')).toBe(`imported-${strategy}`);
+  expect(git(target, 'branch', '--show-current')).toBe(clone.branch);
+  expect(fs.lstatSync(path.join(target, '.git')).isDirectory()).toBe(true);
+  expect(fs.readFileSync(path.join(target, 'note.md'), 'utf8')).toBe('Imported project content\n');
+  const sourceHead = git(linked, 'rev-parse', 'HEAD');
+  fs.writeFileSync(path.join(target, 'note.md'), 'Only the agent changed this\n');
+  git(target, 'add', '--all');
+  git(target, '-c', 'user.name=SpecOS', '-c', 'user.email=specos@localhost', '-c', 'commit.gpgsign=false', 'commit', '-m', 'Workspace edit');
+  expect(git(linked, 'rev-parse', 'HEAD')).toBe(sourceHead);
+  expect(fs.readFileSync(path.join(linked, 'note.md'), 'utf8')).toBe('Imported project content\n');
+});

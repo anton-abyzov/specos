@@ -6,7 +6,7 @@ A browser desktop for agent work, backed by Linux, a real shell and independent 
 
 ## Run on Linux
 
-Use Node.js 22 or newer, npm, Git and a C/C++ build toolchain for node-pty (`build-essential`, Python 3 on Debian/Ubuntu).
+Use Node.js 22.22 or newer, npm, Git and a C/C++ build toolchain for node-pty (`build-essential`, Python 3 on Debian/Ubuntu).
 
 ```sh
 cd /home/anton/live/spec-os

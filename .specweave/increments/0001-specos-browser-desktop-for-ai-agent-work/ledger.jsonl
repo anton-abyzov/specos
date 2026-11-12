@@ -50,3 +50,5 @@
 {"t":"*","e":"session","by":"codex@minisforum","at":"2026-11-12T08:22:03.040Z","note":"session 01a1ced7-0541-74e3-8e5a-7a53f8c5cd8b"}
 {"t":"T-24","e":"claim","by":"codex@minisforum","at":"2026-11-12T08:22:03.041Z"}
 {"t":"T-24","e":"done","by":"codex@minisforum","at":"2026-11-12T08:22:03.042Z","evidence":"Polish checks passed: 2 tests, /tmp/specos-polish.log; light and dark artifacts in reports/artifacts\nHEAD cf4c4c9"}
+{"t":"T-25","e":"claim","by":"codex@minisforum","at":"2026-11-12T08:22:03.183Z"}
+{"t":"T-25","e":"done","by":"codex@minisforum","at":"2026-11-12T08:22:03.184Z","evidence":"Scenario passed: /tmp/specos-scenario.log; T-25 screenshots in reports/artifacts\nHEAD 4f246c1"}

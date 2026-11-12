@@ -200,7 +200,18 @@ function run(command: string, args: string[]): Promise<void> {
   });
 }
 
-const startBranch = (job: CloneJob): Promise<string> => git(job.target, ['checkout', '--quiet', '-b', job.branch]);
+async function startBranch(job: CloneJob): Promise<string> {
+  const metadata = path.join(job.target, '.git');
+  if (!(await fsp.lstat(metadata)).isDirectory()) {
+    // A linked worktree's .git file points back to its source checkout. Replace the
+    // copied pointer with independent metadata before any branch/index mutation.
+    await fsp.unlink(metadata);
+    await git(job.target, ['init', '--quiet']);
+    await git(job.target, ['fetch', '--quiet', '--no-tags', job.project, job.baseRef]);
+    await git(job.target, ['reset', '--mixed', job.baseRef]);
+  }
+  return git(job.target, ['checkout', '--quiet', '-b', job.branch]);
+}
 
 const CLONERS: Record<CloneStrategy, (job: CloneJob) => Promise<unknown>> = {
   /** Copy-on-write: every file shares its blocks with the original until one side writes. Repository included. */

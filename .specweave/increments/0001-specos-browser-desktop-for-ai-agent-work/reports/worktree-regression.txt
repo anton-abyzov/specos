@@ -1,0 +1,11 @@
+
+ RUN  v5.1.0 /home/anton/live/spec-os
+
+Preparing worktree (new branch 'imported-copy')
+Preparing worktree (new branch 'imported-reflink')
+
+ Test Files  1 passed (1)
+      Tests  49 passed | 1 skipped (50)
+   Start at  03:22:53
+   Duration  6.85s (tests 97%, import 2%, transform 1%)
+
