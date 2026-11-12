@@ -282,6 +282,8 @@ describe('write', () => {
   test('replaces a file atomically: new inode, same mode, no temp file left behind', async () => {
     fs.mkdirSync(inHome('bin'));
     fs.writeFileSync(inHome('bin/run.sh'), '#!/bin/sh\necho old\n', { mode: 0o755 });
+    // Set the fixture explicitly: creation mode is filtered by the runner's umask.
+    fs.chmodSync(inHome('bin/run.sh'), 0o755);
     const before = fs.statSync(inHome('bin/run.sh'));
 
     expect((await write('bin/run.sh', '#!/bin/sh\necho new\n')).status).toBe(200);

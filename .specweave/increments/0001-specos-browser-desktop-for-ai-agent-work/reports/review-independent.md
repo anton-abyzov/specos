@@ -2,7 +2,7 @@
 
 Reviewed November 12, 2026 against commit `759ea8c1611dca01b18986126147f2b6400bdc95` plus the current uncommitted polish changes. Scope: authentication, path guarding, workspace creation/merge, agent execution, and significant acceptance gaps. No full test suite was run in this review.
 
-## Finding requiring correction
+## Finding resolved
 
 **P1: Copying a project that is a Git worktree shares its index and changes its branch.**
 
@@ -27,3 +27,16 @@ HTTP auth is registered before API/static routes; WebSocket upgrades separately 
 Partial merge while an agent is running is an intentional interaction, with explanatory text and a Merge again action. A targeted check confirmed that it merges the current snapshot and leaves later edits in the workspace. This is not reported as a defect.
 
 The final README, end-to-end scenario, full-suite output, screenshot inspection and increment closure are still owned by the implementing task and were not certified by this review.
+
+## Resolution verification
+
+Commit `d5651085c6b7b38a383f4a0dce4b1666aa93cef6` replaces copied `.git` pointers with independent repository metadata, fetches the base commit and initializes the destination index before creating its agent branch. The added regression covers copy and reflink strategies.
+
+Independently repeated the linked-worktree reproduction after this fix for both strategies, then edited the workspace and merged it through the HTTP API. All assertions passed: destination metadata is a directory, the source branch remains unchanged, workspace edits do not affect source contents before merging, the merge returns HTTP 200 with `merged: true`, the imported project receives the edit, and the original primary worktree remains unchanged. The disposable server and files were cleaned up.
+
+```text
+copy PASS: independent metadata, original branch preserved, merge back succeeds, primary worktree unchanged
+reflink PASS: independent metadata, original branch preserved, merge back succeeds, primary worktree unchanged
+```
+
+No unresolved blocking findings remain from this review. This conclusion covers the reviewed code and targeted verification, not the separate full-suite and deployment acceptance gates.
