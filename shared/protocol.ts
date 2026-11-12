@@ -182,7 +182,11 @@ export interface WorkspaceDiff {
   deletions: number;
 }
 
-/** POST /api/workspaces/:id/merge  200 on success, 409 with conflicts otherwise */
+/**
+ * POST /api/workspaces/:id/merge  200 on success, 409 with conflicts otherwise.
+ * With ?conflicts=report a conflict is answered with 200 as well (merged is false): a browser logs
+ * every 4xx answer as an error, and a conflict is an answer the desktop expects.
+ */
 export interface MergeResult {
   merged: boolean;
   commit?: string;

@@ -153,7 +153,10 @@ export const api = {
      */
     merge: async (workspaceId: string): Promise<MergeResult> => {
       try {
-        return await json<MergeResult>('POST', `/api/workspaces/${id(workspaceId)}/merge`);
+        // Asked for as a report, so the browser does not log an expected conflict as a failed request.
+        return await json<MergeResult>('POST', `/api/workspaces/${id(workspaceId)}/merge`, {
+          query: { conflicts: 'report' },
+        });
       } catch (error) {
         if (error instanceof ApiRequestError && error.status === 409 && isMergeResult(error.body)) return error.body;
         throw error;

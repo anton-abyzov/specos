@@ -205,7 +205,9 @@ export async function registerMerge(app: FastifyInstance, ctx: Ctx): Promise<voi
       const { id } = request.params as { id: string };
       // One at a time, and never while a clone commits in the same project.
       const result = await workspaces.exclusive(() => mergeNow(id));
-      return reply.code(result.merged ? 200 : 409).send(result);
+      // A caller that asks for conflicts as a report gets them as an ordinary answer.
+      const asReport = (request.query as { conflicts?: unknown }).conflicts === 'report';
+      return reply.code(result.merged || asReport ? 200 : 409).send(result);
     });
   });
 }

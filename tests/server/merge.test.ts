@@ -272,6 +272,20 @@ describe.each<CloneStrategy>(['worktree', 'copy'])('a %s workspace', (strategy) 
       expect(read(inWorkspace('note.md'))).toContain('the agent way');
     });
 
+    test('a conflict asked for as a report answers 200 with the same body', async () => {
+      const { workspace, inWorkspace, inProject } = await makeFixture(strategy);
+      const mine = NOTE.replace('The first line.', 'The first line, my way.');
+      fs.writeFileSync(inWorkspace('note.md'), NOTE.replace('The first line.', 'The first line, the agent way.'));
+      fs.writeFileSync(inProject('note.md'), mine);
+
+      const response = await server.fetch(`/api/workspaces/${workspace.id}/merge?conflicts=report`, { method: 'POST' });
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ merged: false, files: [], conflicts: ['note.md'] } satisfies MergeResult);
+      expect(read(inProject('note.md'))).toBe(mine);
+      expect(workspaces.get(workspace.id)?.status).toBe('conflict');
+    });
+
     test('a conflict can be settled and the workspace merged again', async () => {
       const { workspace, inWorkspace, inProject } = await makeFixture(strategy);
       const mine = NOTE.replace('The first line.', 'The first line, my way.');

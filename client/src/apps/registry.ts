@@ -5,6 +5,7 @@
  */
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { APP_COLORS } from '../design/color';
+import { activityMenus } from './activity/menus';
 import { chatMenus } from './chat/menus';
 import { terminalMenus } from './terminal/menus';
 
@@ -121,6 +122,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     minSize: { w: 560, h: 360 },
     singleton: true,
     inDock: true,
+    menus: activityMenus,
   },
   system: {
     id: 'system',
