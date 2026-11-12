@@ -564,9 +564,13 @@ describe('the clone benchmark', () => {
     return hash.digest('hex');
   }
 
+  /** What an open desktop heard from the run that generated the sample project. */
+  let heardWhileGenerating: Awaited<ReturnType<typeof openEvents>>['events'] = [];
+
   test('with count 3 it clones three times, streams each clone and leaves nothing behind', async () => {
     const { socket, events } = await openEvents();
     sockets.push(socket);
+    heardWhileGenerating = events;
     const before = (await listed()).workspaces;
 
     const response = await post('/api/system/benchmark', { count: 3 });
@@ -652,6 +656,29 @@ describe('the clone benchmark', () => {
     expect(fingerprintOf(sample())).toBe(fingerprint);
     // The content is computed, not random, so it is the same wherever and whenever it is generated.
     expect(fingerprint).toMatchInlineSnapshot(`"a426d7cc0c376da23ce8542df4ceeb6ab56ba0e661c4577e1f299c309a19513f"`);
+  });
+
+  test('the generated sample project is one line in the journal, and a later edit to it still has a diff', async () => {
+    const journal = async (): Promise<ActivityEntry[]> => ((await (await server.fetch('/api/activity?limit=1000')).json()) as ActivityListResponse).entries;
+    // The journal goes quiet about the project for two seconds after it appears.
+    await new Promise((resolve) => setTimeout(resolve, 2100));
+
+    const generated = (await journal()).filter((entry) => entry.path.startsWith('Projects/sample-project'));
+    expect(generated.map((entry) => entry.path)).toEqual(['Projects/sample-project']);
+    // Open desktops heard the same single thing, so a list of changes is the same before and after a reload.
+    const heard = heardWhileGenerating.flatMap((event) => (event.type === 'fs' && event.entry.path.startsWith('Projects/sample-project') ? [event.entry.path] : []));
+    expect(heard).toEqual(['Projects/sample-project']);
+
+    const readme = path.join(sample(), 'README.md');
+    const original = fs.readFileSync(readme, 'utf8');
+    fs.writeFileSync(readme, original + '\nA line somebody wrote.\n');
+    try {
+      await expect
+        .poll(async () => (await journal()).find((entry) => entry.path === 'Projects/sample-project/README.md'))
+        .toMatchObject({ kind: 'change', hasDiff: true, additions: 2, deletions: 0 });
+    } finally {
+      fs.writeFileSync(readme, original);
+    }
   });
 
   test('a named project is cloned instead of the sample', async () => {

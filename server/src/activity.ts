@@ -42,8 +42,10 @@ export interface ActivityService {
    * Keeps scratch folders out of the journal: until the returned function is called, nothing below a folder
    * whose path starts with `relPrefix` is recorded. The folder itself coming and going is still announced to
    * open desktops, so a window that lists its parent stays right, but it is not journalled either.
+   * With `remember` the prefix is a kept folder's contents: nothing below it is announced at all, and its text
+   * files are still read, so the first real change to one of them has a diff.
    */
-  mute(relPrefix: string): () => void;
+  mute(relPrefix: string, remember?: boolean): () => void;
   /** Calls back for every new entry, in order. Returns the function that stops it. */
   onEntry(listener: (entry: ActivityEntry) => void): () => void;
   /** Settles when the files that were in home at start have been read, so their first change has a diff. */
@@ -236,7 +238,7 @@ export function registerActivity(app: FastifyInstance, ctx: Ctx): void {
   let merges: Array<{ prefix: string; actor: Actor; until: number }> = [];
   let resolveActor: ActorResolver = () => undefined;
   let resolveWorkspace: WorkspaceResolver = () => undefined;
-  let muted: string[] = [];
+  let muted: Array<{ prefix: string; remember: boolean }> = [];
   let journalFailed = false;
 
   function actorOf(rel: string): Actor {
@@ -284,9 +286,13 @@ export function registerActivity(app: FastifyInstance, ctx: Ctx): void {
 
   async function recordNow(kind: ChangeKind, abs: string): Promise<ActivityEntry | undefined> {
     const rel = toRel(home, abs);
-    const scratch = muted.find((prefix) => rel.startsWith(prefix));
+    const scratch = muted.find((entry) => rel.startsWith(entry.prefix));
     if (scratch !== undefined) {
-      const isFolderItself = !rel.slice(scratch.length).includes('/') && (kind === 'addDir' || kind === 'unlinkDir');
+      if (scratch.remember) {
+        await textChange(kind, rel, abs);
+        return undefined;
+      }
+      const isFolderItself = !rel.slice(scratch.prefix.length).includes('/') && (kind === 'addDir' || kind === 'unlinkDir');
       if (!isFolderItself) return undefined;
       const entry: ActivityEntry = { id: nextId++, at: Date.now(), kind, path: rel, isDir: true, actor: { type: 'me' }, hasDiff: false };
       ctx.bus.emit({ type: 'fs', entry });
@@ -362,11 +368,11 @@ export function registerActivity(app: FastifyInstance, ctx: Ctx): void {
     markMerge(relPrefix, actor, ms) {
       merges.push({ prefix: relPrefix, actor, until: Date.now() + ms });
     },
-    mute(relPrefix) {
-      muted.push(relPrefix);
+    mute(relPrefix, remember = false) {
+      const entry = { prefix: relPrefix, remember };
+      muted.push(entry);
       return () => {
-        const at = muted.indexOf(relPrefix);
-        if (at >= 0) muted = muted.filter((_, index) => index !== at);
+        muted = muted.filter((other) => other !== entry);
       };
     },
     onEntry(listener) {

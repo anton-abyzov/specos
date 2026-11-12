@@ -149,8 +149,9 @@ async function writeFiles(root: string): Promise<void> {
 /**
  * Makes sure `<projectsFolder>/sample-project` exists, generating it when it
  * does not. An existing folder is left as it is, whatever it contains.
+ * `beforeItAppears` runs only when the project is generated, just before it shows up.
  */
-export async function ensureSampleProject(projectsFolder: string): Promise<void> {
+export async function ensureSampleProject(projectsFolder: string, beforeItAppears?: () => void): Promise<void> {
   const target = path.join(projectsFolder, SAMPLE_PROJECT_NAME);
   const present = await fsp.lstat(target).then(
     () => true,
@@ -163,6 +164,7 @@ export async function ensureSampleProject(projectsFolder: string): Promise<void>
   try {
     await fsp.mkdir(scratch);
     await writeFiles(scratch);
+    beforeItAppears?.();
     await fsp.rename(scratch, target);
   } catch (error) {
     await fsp.rm(scratch, { recursive: true, force: true });

@@ -455,7 +455,13 @@ export async function registerWorkspaces(app: FastifyInstance, ctx: Ctx): Promis
   let benchmarkRunning = false;
 
   async function benchmark(count: number, requested: unknown): Promise<BenchmarkResult> {
-    if (requested === undefined) await ensureSampleProject(path.join(home, PROJECTS));
+    if (requested === undefined) {
+      // Two hundred generated files are one event for the user: the folder appearing in Projects.
+      await ensureSampleProject(path.join(home, PROJECTS), () => {
+        const unmuteSample = ctx.activity?.mute(`${PROJECTS}/${SAMPLE_PROJECT_NAME}/`, true);
+        if (unmuteSample) setTimeout(unmuteSample, BENCH_QUIET_MS).unref();
+      });
+    }
     const project = await projectAt(home, requested ?? `${PROJECTS}/${SAMPLE_PROJECT_NAME}`);
     const id = newId();
     const made: Workspace[] = [];
