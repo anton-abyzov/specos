@@ -51,9 +51,8 @@
   --r-2xl: 22px;
   --r-full: 999px;
 
-  /* The signature clipped corner, as a size and as ready-made shapes. */
+  /* The signature clipped corner, as a size. The ready-made shape follows below. */
   --chamfer: 8px;
-  --clip-chamfer: polygon(0 0, calc(100% - var(--chamfer)) 0, 100% var(--chamfer), 100% 100%, 0 100%);
 
   /* Shell metrics. */
   --menubar-height: 30px;
@@ -85,6 +84,17 @@
   --ease-in-out: cubic-bezier(0.6, 0, 0.3, 1);
 }
 
+/*
+ * The clipped corner as a shape. Declared on every element and not on the root: a var() is
+ * resolved where it is declared, so a shape inherited from the root would keep the root's
+ * 8px whatever --chamfer an element sets for itself.
+ */
+*,
+*::before,
+*::after {
+  --clip-chamfer: polygon(0 0, calc(100% - var(--chamfer)) 0, 100% var(--chamfer), 100% 100%, 0 100%);
+}
+
 :root,
 [data-theme='light'] {
   color-scheme: light;
@@ -97,8 +107,9 @@
 
   --ink: #1b1a17;
   --ink-soft: #3a3833;
-  --ink-muted: #625e56;
-  --ink-faint: #8c877c;
+  /* Both read at AA (4.5:1) on paper and on every surface; faint is for the least important words. */
+  --ink-muted: #5a564e;
+  --ink-faint: #746f65;
   --ink-inverse: #fffdf8;
 
   --hairline: rgb(27 26 23 / 0.12);
@@ -163,8 +174,8 @@
 
   --ink: #ece9e2;
   --ink-soft: #cfcbc2;
-  --ink-muted: #9a968c;
-  --ink-faint: #6f6c65;
+  --ink-muted: #a8a49a;
+  --ink-faint: #8f8b81;
   --ink-inverse: #101216;
 
   --hairline: rgb(236 233 226 / 0.11);

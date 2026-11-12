@@ -35,7 +35,8 @@ body {
   line-height: var(--leading-body);
   font-synthesis: none;
   font-optical-sizing: auto;
-  text-rendering: optimizeLegibility;
+  /* Glyphs sit where the font puts them, at fractional sizes too, instead of snapping to whole pixels. */
+  text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   /* Chrome that is clicked a lot should not select by accident. Apps opt back in. */
