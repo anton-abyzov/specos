@@ -1,0 +1,582 @@
+/*
+ * System: the machine's spec sheet. One ruled sheet of facts with mono
+ * values, the case for Linux in three plain paragraphs, and the workspace
+ * test drawn as a bar per copy. The only filled control starts the test.
+ */
+
+.system {
+  --sys-hue: oklch(0.52 0.075 218);
+  --sys-line: light-dark(oklch(0.47 0.085 218), oklch(0.76 0.085 218));
+  --sys-wash: light-dark(oklch(0.52 0.075 218 / 0.13), oklch(0.76 0.085 218 / 0.16));
+
+  height: 100%;
+  overflow-y: auto;
+  background: var(--surface);
+  color: var(--ink);
+  container-type: inline-size;
+}
+
+.sys-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-8);
+  max-width: 980px;
+  margin: 0 auto;
+  padding: var(--s-8) var(--s-8) var(--s-10);
+}
+
+/* ---------------------------------------------------------------- headline */
+
+.sys-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-1) var(--s-4);
+}
+
+.sys-head__os,
+.sys-head__kernel {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+}
+
+.sys-head__os {
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+}
+
+.sys-head__kernel {
+  color: var(--ink-muted);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-regular);
+}
+
+.sys-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-snug);
+  letter-spacing: -0.01em;
+}
+
+/* ---------------------------------------------------------------- the sheet */
+
+/* The rules between cells are the sheet's own colour showing through 1px gaps,
+   so they follow the clipped corner. */
+.sys-sheet {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  padding: 1px;
+  background: var(--hairline-strong);
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+  position: relative;
+  margin: 0;
+}
+
+/* The rule along the clipped corner: the cell under it is square, so the cut needs a line of its own. */
+.sys-sheet::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(to top right, transparent calc(50% - 1.5px), var(--hairline-strong) calc(50% - 1.5px));
+  content: '';
+  pointer-events: none;
+}
+
+.sys-sheet dd {
+  margin: 0;
+}
+
+.sys-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: var(--s-3) var(--s-4) 14px;
+  background: var(--surface);
+}
+
+.sys-fact[data-wide='2'] {
+  grid-column: span 2;
+}
+
+.sys-fact[data-wide='4'] {
+  grid-column: 1 / -1;
+}
+
+.sys-fact__label {
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+}
+
+.sys-fact__value {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+  font-feature-settings: 'zero' 1;
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+}
+
+/* Processor and memory: the reading, its two minutes, and the fine print. */
+
+.sys-meter__body {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+}
+
+.sys-meter__reading {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-medium);
+  font-feature-settings: 'zero' 1;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.sys-spark {
+  width: 100%;
+  height: 40px;
+  border-bottom: 1px solid var(--hairline);
+  overflow: visible;
+}
+
+.sys-spark__line {
+  fill: none;
+  stroke: var(--sys-line);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.sys-spark__area {
+  fill: var(--sys-wash);
+}
+
+.sys-meter__notes {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  gap: 2px var(--s-4);
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-feature-settings: 'zero' 1;
+  line-height: var(--leading-snug);
+}
+
+/* File system and clone strategy. */
+
+.sys-disk__body,
+.sys-clone__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sys-disk__type {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.sys-disk__where {
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
+}
+
+.sys-disk__where span {
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-feature-settings: 'zero' 1;
+}
+
+.sys-disk__bar {
+  display: block;
+  height: 6px;
+  margin-top: var(--s-1);
+  background: var(--hairline);
+}
+
+.sys-disk__used {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  background: var(--sys-line);
+  transition: width var(--t-slow) var(--ease-out);
+}
+
+.sys-disk__figures {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-feature-settings: 'zero' 1;
+}
+
+.sys-disk__figures span:last-child {
+  color: var(--ink-muted);
+}
+
+.sys-clone__reason {
+  max-width: 44ch;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+}
+
+/* ---------------------------------------------------------------- why Linux */
+
+.sys-grounds {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.sys-grounds__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-6);
+}
+
+.sys-ground {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-2);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--hairline-strong);
+}
+
+.sys-ground__name {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.sys-ground__text {
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+}
+
+.sys-ground__fact {
+  margin-top: auto;
+  padding-top: var(--s-1);
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-feature-settings: 'zero' 1;
+  line-height: var(--leading-body);
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.sys-quiet {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  margin-top: auto;
+  padding: 0 10px 0 8px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  transition: background-color var(--t-fast) var(--ease-out);
+}
+
+.sys-quiet:hover {
+  background: var(--hover);
+}
+
+.sys-quiet:active {
+  background: var(--pressed);
+}
+
+/* ---------------------------------------------------------------- the test */
+
+.sys-bench {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.sys-bench__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-6);
+}
+
+.sys-bench__intro {
+  display: flex;
+  flex: 1 1 280px;
+  flex-direction: column;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.sys-bench__status {
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+}
+
+.sys-bench__controls {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.bench-counts {
+  display: flex;
+  height: 32px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-sm);
+}
+
+.bench-counts__option {
+  min-width: 38px;
+  padding: 0 var(--s-2);
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+}
+
+.bench-counts__option + .bench-counts__option {
+  border-left: 1px solid var(--hairline-strong);
+}
+
+.bench-counts__option:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.bench-counts__option[aria-checked='true'] {
+  background: var(--ink);
+  color: var(--ink-inverse);
+}
+
+.bench-counts__option[aria-checked='true']:hover:not(:disabled) {
+  background: var(--ink);
+  color: var(--ink-inverse);
+}
+
+.bench-counts__option:disabled:not([aria-checked='true']) {
+  opacity: 0.45;
+}
+
+.bench-counts__option:focus-visible {
+  outline-offset: -2px;
+}
+
+.sys-primary {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  /* Wide enough for every label it shows, so it never changes size mid-run. */
+  min-width: 236px;
+  height: 32px;
+  padding: 0 16px 0 12px;
+  border-radius: var(--r-sm);
+  background: var(--accent-fill);
+  clip-path: var(--clip-chamfer);
+  color: var(--on-accent);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: background-color var(--t-fast) var(--ease-out);
+}
+
+.sys-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.sys-primary:disabled {
+  background: var(--ink-muted);
+  color: var(--surface);
+}
+
+.sys-primary:focus-visible {
+  /* The clipped corner would cut an outline, so the ring is drawn inside. */
+  outline: none;
+  box-shadow:
+    inset 0 0 0 2px var(--accent-fill),
+    inset 0 0 0 4px var(--on-accent);
+}
+
+.sys-bench__error {
+  padding: var(--s-2) var(--s-3);
+  border-left: 2px solid var(--danger);
+  background: var(--danger-soft);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.sys-bench__chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.bench-bars {
+  display: grid;
+  grid-template-columns: repeat(var(--bench-count), minmax(0, 1fr));
+  align-items: end;
+  gap: var(--s-2);
+  /* The tallest bar, its number above and its index below. */
+  height: 150px;
+  padding: 0 var(--s-1);
+  border-bottom: 1px solid var(--hairline-strong);
+}
+
+.bench-bars[data-narrow] {
+  gap: var(--s-1);
+}
+
+.bench-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+  height: 100%;
+}
+
+.bench-bar__ms {
+  min-height: 14px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-feature-settings: 'zero' 1;
+  line-height: 14px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.bench-bars[data-narrow] .bench-bar__ms {
+  font-size: var(--text-2xs);
+}
+
+.bench-bar__fill {
+  display: block;
+  background: var(--sys-line);
+  transition: height 380ms var(--ease-out);
+}
+
+@starting-style {
+  .bench-bar__fill {
+    height: 0 !important;
+  }
+}
+
+.bench-bar__stub {
+  display: block;
+  height: 3px;
+  background: var(--hairline-strong);
+}
+
+.bench-bar__index {
+  padding-bottom: 5px;
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 12px;
+  text-align: center;
+}
+
+.sys-bench__axis {
+  color: var(--ink-faint);
+  font-size: var(--text-xs);
+}
+
+.sys-bench__total {
+  font-family: var(--font-mono);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-medium);
+  font-feature-settings: 'zero' 1;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.sys-sheet--figures {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+.sys-sheet--figures .sys-fact--lead {
+  grid-row: span 2;
+  justify-content: space-between;
+}
+
+.sys-sheet--figures .sys-fact:not(.sys-fact--lead) {
+  grid-column: span 2;
+}
+
+/* ---------------------------------------------------------------- narrow windows */
+
+@container (max-width: 700px) {
+  .sys-page {
+    gap: var(--s-6);
+    padding: var(--s-6) var(--s-5) var(--s-8);
+  }
+
+  .sys-sheet {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sys-fact[data-wide='2'] {
+    grid-column: 1 / -1;
+  }
+
+  .sys-sheet--figures .sys-fact--lead {
+    grid-row: auto;
+  }
+
+  .sys-sheet--figures .sys-fact:not(.sys-fact--lead) {
+    grid-column: span 1;
+  }
+
+  .sys-grounds__list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-4);
+  }
+
+  .sys-head__os {
+    font-size: var(--text-2xl);
+  }
+
+  .sys-head__kernel {
+    font-size: var(--text-xl);
+  }
+
+  .sys-bench__controls {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+}

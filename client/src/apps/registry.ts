@@ -10,6 +10,7 @@ import { agentMenus } from './agent/menus';
 import { agentsMenus } from './agents/menus';
 import { chatMenus } from './chat/menus';
 import { editorMenus } from './editor/menus';
+import { systemMenus } from './system/menus';
 import { terminalMenus } from './terminal/menus';
 
 export type AppId = 'files' | 'terminal' | 'editor' | 'chat' | 'agents' | 'activity' | 'system' | 'agent';
@@ -135,10 +136,11 @@ export const APPS: Record<AppId, AppDefinition> = {
     description: 'This machine, and how fast it gives an agent its own copy.',
     color: APP_COLORS.system,
     component: lazy(() => import('./system/index')),
-    defaultSize: { w: 760, h: 620 },
+    defaultSize: { w: 900, h: 800 },
     minSize: { w: 520, h: 420 },
     singleton: true,
     inDock: true,
+    menus: systemMenus,
   },
   agent: {
     id: 'agent',
