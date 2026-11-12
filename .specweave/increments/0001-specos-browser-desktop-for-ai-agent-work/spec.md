@@ -91,6 +91,9 @@ Risks: browsers reserve Ctrl+1 to 4 and Cmd+Space in a normal tab, so Ctrl+Alt+1
 ### Open
 - none
 
+### Verified environment decisions
+- D-06 Probe actual Git worktree creation in home. If the environment refuses it and reflinks are unavailable, use independent plain copies and report that strategy. This checkout has that restriction; do not bypass it.
+
 ## Tasks
 
 ### T-01 Scaffold the project and the shared contract

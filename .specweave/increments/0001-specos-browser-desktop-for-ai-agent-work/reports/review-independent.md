@@ -40,3 +40,15 @@ reflink PASS: independent metadata, original branch preserved, merge back succee
 ```
 
 No unresolved blocking findings remain from this review. This conclusion covers the reviewed code and targeted verification, not the separate full-suite and deployment acceptance gates.
+
+## Deployment follow-up review
+
+Reviewed the `server/src/probe.ts` follow-up that tests actual worktree creation in the configured home rather than merely checking whether Git is installed. The probe uses a newly created scratch repository, applies the existing server commit configuration, catches unavailable operations and removes its scratch directory in `finally`. It respects the environment restriction by selecting ordinary independent copies instead of circumventing the Git wrapper.
+
+Independently called `detectCloneStrategy('/home/anton/live/spec-os/home')` in a fresh process. Assertions passed for the copy strategy, the reported limitation and removal of all newly created probe directories:
+
+```json
+{"strategy":"copy","reflinkSupported":false,"reason":"ext4 has no reflinks and git worktrees are unavailable here, so workspaces are independent plain copies"}
+```
+
+The README accurately documents the fallback. No new blocking findings were identified in this follow-up. The live installation therefore provides ordinary copies, with their actual cost reported, rather than claiming reflink/worktree efficiency on this restricted path.

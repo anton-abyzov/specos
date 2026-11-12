@@ -1,0 +1,58 @@
+{
+  "checkedAt": "2026-11-12T08:29:04.609Z",
+  "address": "http://192.168.40.158:7300/?token=<startup-token>",
+  "unauthenticatedStatus": 401,
+  "authenticatedStatus": 200,
+  "httpOnly": true,
+  "sameSite": "Strict",
+  "consoleErrors": [],
+  "benchmark": {
+    "count": 10,
+    "total": "1.79 s",
+    "median": "179 ms",
+    "strategy": "copy"
+  },
+  "system": {
+    "hostname": "minisforum",
+    "os": {
+      "platform": "linux",
+      "name": "Ubuntu",
+      "version": "26.04"
+    },
+    "kernel": "7.0.0-42-generic",
+    "arch": "x64",
+    "fs": {
+      "type": "ext4",
+      "device": "/dev/mapper/ubuntu--vg-ubuntu--lv",
+      "mount": "/",
+      "total": 168503205888,
+      "free": 26499641344
+    },
+    "cpu": {
+      "model": "AMD Ryzen 7 8745H w/ Radeon 780M Graphics",
+      "cores": 16,
+      "load": [
+        2.87,
+        2.55,
+        1.93
+      ]
+    },
+    "memory": {
+      "total": 30766080000,
+      "available": 24057393152
+    },
+    "uptime": 34976.57,
+    "node": "v24.22.0",
+    "home": "/home/anton/live/spec-os/home",
+    "clone": {
+      "strategy": "copy",
+      "reflinkSupported": false,
+      "reason": "ext4 has no reflinks and git worktrees are unavailable here, so workspaces are independent plain copies"
+    },
+    "agentRunner": {
+      "available": "claude",
+      "claudeVersion": "2.1.322 (Claude Code)"
+    },
+    "badge": "Linux 7.0 · ext4"
+  }
+}

@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import type { AgentRunner, CloneStrategyInfo } from '../../shared/protocol';
 import type { Config } from './config';
+import { AS_SERVER, git } from './git';
 
 /**
  * Facts about the machine that cannot change while the server runs: which file
@@ -101,11 +102,22 @@ async function reflinkWorks(dir: string): Promise<boolean> {
   }
 }
 
-const gitAvailable = (): Promise<boolean> =>
-  run('git', ['--version']).then(
-    () => true,
-    () => false,
-  );
+/** Test the operation in home: Git can exist while worktrees are disallowed there. */
+async function worktreeWorks(home: string): Promise<boolean> {
+  const scratch = await fsp.mkdtemp(path.join(home, '.specos-probe-'));
+  const repository = path.join(scratch, 'repository');
+  try {
+    await fsp.mkdir(repository);
+    await git(repository, ['init', '--quiet']);
+    await git(repository, [...AS_SERVER, 'commit', '--quiet', '--allow-empty', '--no-verify', '-m', 'Workspace capability probe']);
+    await git(repository, ['worktree', 'add', '--quiet', '--detach', path.join(scratch, 'checkout'), 'HEAD']);
+    return true;
+  } catch {
+    return false;
+  } finally {
+    await fsp.rm(scratch, { recursive: true, force: true });
+  }
+}
 
 /** How "give this agent its own copy" will clone a project that lives in this home folder. */
 export const detectCloneStrategy = oncePerKey(async (home): Promise<CloneStrategyInfo> => {
@@ -120,13 +132,13 @@ export const detectCloneStrategy = oncePerKey(async (home): Promise<CloneStrateg
       reason: `Reflink copies of ${type} are not available on ${os.type()}, so workspaces are plain copies`,
     };
   }
-  if (await gitAvailable()) {
+  if (await worktreeWorks(home)) {
     return { strategy: 'worktree', reflinkSupported, reason: `${type} has no reflinks, so workspaces are git worktrees` };
   }
   return {
     strategy: 'copy',
     reflinkSupported,
-    reason: `${type} has no reflinks and git is not installed, so workspaces are plain copies`,
+    reason: `${type} has no reflinks and git worktrees are unavailable here, so workspaces are independent plain copies`,
   };
 });
 

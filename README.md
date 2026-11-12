@@ -24,7 +24,7 @@ With `claude` on PATH, agents use its existing local authentication and stream r
 
 Create a folder under Projects in Files, create a note, and double-click it to edit and save. Open Chat, choose that project with Ctrl+P, type a request and press Enter. Send another request while the first runs to start a second independent workspace. Each job has a window, a dock entry, a live stream and touched files. Inspect the changes in Activity and merge a workspace back into the project; conflicting changes are reported without replacing the project files.
 
-Linux uses reflink copies when supported, or Git worktrees otherwise. System reports the actual strategy, clone time, logical bytes and filesystem allocation delta, and can benchmark ten copies. These are filesystem workspaces, not containers or security sandboxes.
+Linux uses reflink copies when supported, or Git worktrees otherwise. When the environment disallows worktrees, it falls back to independent plain copies and reports that limitation. System reports the actual strategy, clone time, logical bytes and filesystem allocation delta, and can benchmark ten copies. These are filesystem workspaces, not containers or security sandboxes.
 
 ## Keyboard
 
