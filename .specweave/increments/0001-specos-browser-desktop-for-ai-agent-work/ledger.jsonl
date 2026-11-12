@@ -52,3 +52,5 @@
 {"t":"T-24","e":"done","by":"codex@minisforum","at":"2026-11-12T08:22:03.042Z","evidence":"Polish checks passed: 2 tests, /tmp/specos-polish.log; light and dark artifacts in reports/artifacts\nHEAD cf4c4c9"}
 {"t":"T-25","e":"claim","by":"codex@minisforum","at":"2026-11-12T08:22:03.183Z"}
 {"t":"T-25","e":"done","by":"codex@minisforum","at":"2026-11-12T08:22:03.184Z","evidence":"Scenario passed: /tmp/specos-scenario.log; T-25 screenshots in reports/artifacts\nHEAD 4f246c1"}
+{"t":"T-26","e":"claim","by":"codex@minisforum","at":"2026-11-12T08:30:22.579Z"}
+{"t":"T-26","e":"done","by":"codex@minisforum","at":"2026-11-12T08:30:22.581Z","evidence":"Full typecheck, 314 server tests and 63 headless browser tests passed; reports/task-T-26.txt. Capability fallback separately passed 56 targeted tests and live benchmark; final verify follows.\nHEAD 06f4e73"}

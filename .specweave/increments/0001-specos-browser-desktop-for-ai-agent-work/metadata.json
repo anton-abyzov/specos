@@ -1,13 +1,15 @@
 {
   "id": "0001-specos-browser-desktop-for-ai-agent-work",
   "uuid": "f340aa5a-c02b-48dc-86c8-5cb53350b000",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "priority": "P1",
   "created": "2026-11-11T18:51:23.275Z",
-  "updated": "2026-11-12T08:22:03.184Z",
-  "lastActivity": "2026-11-12T08:22:03.184Z",
+  "updated": "2026-11-12T08:31:23.756Z",
+  "lastActivity": "2026-11-12T08:31:23.756Z",
   "title": "SpecOS: browser desktop for AI agent work",
   "project": "spec-os",
-  "externalLinks": {}
+  "externalLinks": {},
+  "readyForReviewAt": "2026-11-12T08:31:23.755Z",
+  "approvedAt": "2026-11-12T08:31:23.756Z"
 }
