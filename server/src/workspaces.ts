@@ -32,6 +32,8 @@ import { ensureSampleProject, SAMPLE_PROJECT_NAME } from './sample-project';
 
 const PROJECTS = 'Projects';
 const WORKSPACES = 'Workspaces';
+/** How long after a benchmark its folders stay out of the journal, for the watcher's late reports. */
+const BENCH_QUIET_MS = 2000;
 const REGISTRY_FILE = 'workspaces.json';
 const STRATEGIES: readonly CloneStrategy[] = ['reflink', 'worktree', 'copy'];
 
@@ -457,6 +459,8 @@ export async function registerWorkspaces(app: FastifyInstance, ctx: Ctx): Promis
     const project = await projectAt(home, requested ?? `${PROJECTS}/${SAMPLE_PROJECT_NAME}`);
     const id = newId();
     const made: Workspace[] = [];
+    // Thousands of files that nobody wrote: they would push every real change out of the journal.
+    const unmute = ctx.activity?.mute(`${WORKSPACES}/${slug(project.name, 'project')}-bench-`);
     try {
       for (let index = 0; index < count; index++) {
         const workspace = await createNow({ project: project.rel, label: `bench-${index + 1}` }, true);
@@ -466,6 +470,8 @@ export async function registerWorkspaces(app: FastifyInstance, ctx: Ctx): Promis
     } finally {
       // Also when a clone failed half way: the benchmark never leaves workspaces behind.
       for (const workspace of made) await service.remove(workspace.id);
+      // The watcher reports the last deletions a moment after they happen.
+      if (unmute) setTimeout(unmute, BENCH_QUIET_MS).unref();
     }
     const clones = made.map((workspace) => workspace.clone);
     const measured = await measureTree(project.abs);

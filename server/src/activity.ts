@@ -38,6 +38,12 @@ export interface ActivityService {
   setWorkspaceResolver(resolver: WorkspaceResolver): void;
   /** For the next `ms`, changes at or below `relPrefix` are the work of this merge and not of the user. */
   markMerge(relPrefix: string, actor: Actor, ms: number): void;
+  /**
+   * Keeps scratch folders out of the journal: until the returned function is called, nothing below a folder
+   * whose path starts with `relPrefix` is recorded. The folder itself coming and going is still announced to
+   * open desktops, so a window that lists its parent stays right, but it is not journalled either.
+   */
+  mute(relPrefix: string): () => void;
   /** Calls back for every new entry, in order. Returns the function that stops it. */
   onEntry(listener: (entry: ActivityEntry) => void): () => void;
   /** Settles when the files that were in home at start have been read, so their first change has a diff. */
@@ -230,6 +236,7 @@ export function registerActivity(app: FastifyInstance, ctx: Ctx): void {
   let merges: Array<{ prefix: string; actor: Actor; until: number }> = [];
   let resolveActor: ActorResolver = () => undefined;
   let resolveWorkspace: WorkspaceResolver = () => undefined;
+  let muted: string[] = [];
   let journalFailed = false;
 
   function actorOf(rel: string): Actor {
@@ -277,6 +284,14 @@ export function registerActivity(app: FastifyInstance, ctx: Ctx): void {
 
   async function recordNow(kind: ChangeKind, abs: string): Promise<ActivityEntry | undefined> {
     const rel = toRel(home, abs);
+    const scratch = muted.find((prefix) => rel.startsWith(prefix));
+    if (scratch !== undefined) {
+      const isFolderItself = !rel.slice(scratch.length).includes('/') && (kind === 'addDir' || kind === 'unlinkDir');
+      if (!isFolderItself) return undefined;
+      const entry: ActivityEntry = { id: nextId++, at: Date.now(), kind, path: rel, isDir: true, actor: { type: 'me' }, hasDiff: false };
+      ctx.bus.emit({ type: 'fs', entry });
+      return entry;
+    }
     const change = await textChange(kind, rel, abs);
     if (change === 'skip') return undefined;
 
@@ -346,6 +361,13 @@ export function registerActivity(app: FastifyInstance, ctx: Ctx): void {
     setWorkspaceResolver: (resolver) => void (resolveWorkspace = resolver),
     markMerge(relPrefix, actor, ms) {
       merges.push({ prefix: relPrefix, actor, until: Date.now() + ms });
+    },
+    mute(relPrefix) {
+      muted.push(relPrefix);
+      return () => {
+        const at = muted.indexOf(relPrefix);
+        if (at >= 0) muted = muted.filter((_, index) => index !== at);
+      };
     },
     onEntry(listener) {
       listeners.add(listener);

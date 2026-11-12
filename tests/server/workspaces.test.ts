@@ -9,6 +9,8 @@ import { detectCloneStrategy } from '../../server/src/probe';
 import type { WorkspacesService } from '../../server/src/workspaces';
 import type {
   ApiError,
+  ActivityEntry,
+  ActivityListResponse,
   BenchmarkResult,
   CloneStrategy,
   CloneStrategyInfo,
@@ -601,6 +603,29 @@ describe('the clone benchmark', () => {
     expect(fs.readdirSync(inHome('Workspaces')).filter((name) => name.includes('bench'))).toEqual([]);
     expect(git(sample(), 'branch', '--list', 'agent/*')).toBe('');
     expect(git(sample(), 'worktree', 'list', '--porcelain').match(/^worktree /gm)).toHaveLength(1);
+  });
+
+  test('its scratch copies stay out of the journal, so it never pushes real changes out', async () => {
+    fs.writeFileSync(inHome('kept.txt'), 'a real change\n');
+    const journal = async (): Promise<ActivityEntry[]> => ((await (await server.fetch('/api/activity?limit=1000')).json()) as ActivityListResponse).entries;
+    await expect.poll(async () => (await journal()).some((entry) => entry.path === 'kept.txt')).toBe(true);
+    const { socket, events } = await openEvents();
+    sockets.push(socket);
+
+    expect((await post('/api/system/benchmark', { count: 2 })).status).toBe(200);
+    // Long enough for the watcher to report everything the benchmark did.
+    await new Promise((resolve) => setTimeout(resolve, 700));
+
+    const entries = await journal();
+    expect(entries.filter((entry) => entry.path.includes('-bench-'))).toEqual([]);
+    expect(entries.some((entry) => entry.path === 'kept.txt')).toBe(true);
+    // Open desktops hear the two folders come and go, and none of the files inside them.
+    const heard = events.flatMap((event) => (event.type === 'fs' && event.entry.path.includes('-bench-') ? [event.entry] : []));
+    expect(heard.length).toBeGreaterThan(0);
+    for (const entry of heard) {
+      expect(entry.path).toMatch(/^Workspaces\/sample-project-bench-\d+$/);
+      expect(entry.isDir).toBe(true);
+    }
   });
 
   test('the sample project is about 200 small files and says what it is', () => {
