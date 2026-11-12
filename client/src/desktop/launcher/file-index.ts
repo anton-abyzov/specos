@@ -43,44 +43,53 @@ function extensionOf(name: string): string {
 }
 
 let inFlight: AbortController | null = null;
+/** The newest refresh. One that was superseded settles with it, so whoever awaited it reads a fresh index. */
+let newest: Promise<void> = Promise.resolve();
 
 export const useFileIndex = create<FileIndexState>((set, get) => ({
   files: [],
   truncated: false,
 
-  async refresh() {
+  refresh() {
     inFlight?.abort();
     const request = new AbortController();
     inFlight = request;
-    try {
-      const { entries, truncated } = await api.fs.index(request.signal);
-      const held = get();
-      // Preparing is the costly part, so a path that is still there keeps the target it already has.
-      const known = new Map(held.files.map((file) => [file.path, file]));
-      let changed = entries.length !== held.files.length || truncated !== held.truncated;
-      const files = entries.map((entry, position): IndexedFile => {
-        const existing = known.get(entry.path);
-        if (existing?.kind === entry.kind) {
-          changed ||= held.files[position] !== existing;
-          return existing;
-        }
-        changed = true;
-        const folder = entry.path.slice(0, Math.max(0, entry.path.length - entry.name.length - 1));
-        return {
-          ...entry,
-          folder,
-          ext: entry.kind === 'dir' ? '' : extensionOf(entry.name),
-          folded: fold(entry.path),
-          nameTarget: fuzzysort.prepare(entry.name),
-          pathTarget: fuzzysort.prepare(entry.path),
-        };
-      });
-      // The same index again leaves the store alone: nothing that reads it has to search or render again.
-      if (changed) set({ files, truncated });
-    } catch {
-      // Superseded by a newer request, or the server is away: the index held so far still answers.
-    } finally {
-      if (inFlight === request) inFlight = null;
-    }
+    const mine = load(request).then(() => (request.signal.aborted ? newest : undefined));
+    newest = mine;
+    return mine;
   },
 }));
+
+async function load(request: AbortController): Promise<void> {
+  const { getState: get, setState: set } = useFileIndex;
+  try {
+    const { entries, truncated } = await api.fs.index(request.signal);
+    const held = get();
+    // Preparing is the costly part, so a path that is still there keeps the target it already has.
+    const known = new Map(held.files.map((file) => [file.path, file]));
+    let changed = entries.length !== held.files.length || truncated !== held.truncated;
+    const files = entries.map((entry, position): IndexedFile => {
+      const existing = known.get(entry.path);
+      if (existing?.kind === entry.kind) {
+        changed ||= held.files[position] !== existing;
+        return existing;
+      }
+      changed = true;
+      const folder = entry.path.slice(0, Math.max(0, entry.path.length - entry.name.length - 1));
+      return {
+        ...entry,
+        folder,
+        ext: entry.kind === 'dir' ? '' : extensionOf(entry.name),
+        folded: fold(entry.path),
+        nameTarget: fuzzysort.prepare(entry.name),
+        pathTarget: fuzzysort.prepare(entry.path),
+      };
+    });
+    // The same index again leaves the store alone: nothing that reads it has to search or render again.
+    if (changed) set({ files, truncated });
+  } catch {
+    // Superseded by a newer request, or the server is away: the index held so far still answers.
+  } finally {
+    if (inFlight === request) inFlight = null;
+  }
+}

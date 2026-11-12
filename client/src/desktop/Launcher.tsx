@@ -167,6 +167,22 @@ function LauncherPanel({ returnTo, handedOff }: PanelProps) {
 
   useEffect(() => {
     if (!present) return;
+    // A window that was still opening may ask for the focus once it has loaded. The launcher is modal, so
+    // the field keeps it, and the window gets it when the launcher closes.
+    const keepFocus = (event: FocusEvent) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement) || target.closest('.launcher')) return;
+      // Once it is closing, the focus it gives back is not to be taken again.
+      if (!useShellStore.getState().launcherOpen) return;
+      returnTo.current = target;
+      input.current?.focus();
+    };
+    document.addEventListener('focusin', keepFocus);
+    return () => document.removeEventListener('focusin', keepFocus);
+  }, [present, returnTo]);
+
+  useEffect(() => {
+    if (!present) return;
     const index = useFileIndex.getState();
     void index.refresh();
     let timer: number | undefined;

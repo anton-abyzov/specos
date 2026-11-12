@@ -349,6 +349,12 @@ test('a running agent is found by its name and opens in its own window', async (
   expect(await windows(page)).toContainEqual({ appId: 'agent', params: { agentId: agent.id } });
 });
 
+// The five thousand files below fill the index to its cap. Left in the shared home, they would
+// leave the specs that run after this one searching a desk where nothing else can be found.
+test.afterAll(() => {
+  fs.rmSync(path.join(E2E_HOME, 'Archive'), { recursive: true, force: true });
+});
+
 test('results follow every keystroke within a frame with 5000 files indexed', async ({ page }) => {
   test.setTimeout(180_000);
   // Written straight to disk: five thousand requests would only test the file API.
