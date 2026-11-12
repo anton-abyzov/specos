@@ -1,0 +1,228 @@
+/* The agent kit: status, elapsed time, chips and small actions, shared by Chat, Agents and the agent window. */
+
+.ak-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.ak-status__dot {
+  --chamfer: 2.5px;
+  position: relative;
+  width: 7px;
+  height: 7px;
+  flex: none;
+  background: var(--ink-faint);
+  clip-path: var(--clip-chamfer);
+}
+
+.ak-status[data-status='starting'],
+.ak-status[data-status='running'] {
+  color: var(--agent-text, var(--ink));
+}
+
+.ak-status[data-status='starting'] .ak-status__dot,
+.ak-status[data-status='running'] .ak-status__dot {
+  background: var(--agent-solid, var(--accent));
+  animation: ak-live 1.4s var(--ease-in-out) infinite;
+}
+
+.ak-status[data-status='done'] {
+  color: var(--success-ink);
+}
+.ak-status[data-status='done'] .ak-status__dot {
+  background: var(--success);
+}
+
+.ak-status[data-status='failed'] {
+  color: var(--danger);
+}
+.ak-status[data-status='failed'] .ak-status__dot {
+  background: var(--danger);
+}
+
+@keyframes ak-live {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.ak-elapsed {
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+
+/* ---------------------------------------------------------------- chips */
+
+.ak-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  height: 24px;
+  padding: 0 8px 0 6px;
+  border-radius: var(--r-sm);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  background: var(--surface-sunken);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+}
+
+.ak-chip svg {
+  flex: none;
+  color: var(--agent-text, var(--ink-muted));
+}
+
+.ak-chip__name {
+  overflow: hidden;
+  font-weight: var(--weight-medium);
+  text-overflow: ellipsis;
+}
+
+.ak-chip__kind,
+.ak-chip__count {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+
+.ak-chip__kind {
+  color: var(--ink-muted);
+}
+
+.ak-chip__count {
+  color: var(--agent-text, var(--ink));
+  font-weight: var(--weight-semibold);
+  animation: ak-count var(--t-slow) var(--ease-out);
+}
+
+.ak-chip:not(:disabled):hover {
+  box-shadow: inset 0 0 0 1px var(--agent-border, var(--hairline-strong));
+  background: var(--agent-soft, var(--hover));
+}
+
+.ak-chip:not(:disabled):active {
+  background: var(--pressed);
+}
+
+.ak-chip:disabled .ak-chip__name {
+  text-decoration: line-through;
+  text-decoration-color: var(--ink-faint);
+}
+
+/* A file chip arrives: it grows in and its edge is lit in the agent's colour for a moment. */
+.ak-chip--file {
+  animation: ak-chip-in 420ms var(--ease-out) both;
+}
+
+@keyframes ak-chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px) scale(0.94);
+    box-shadow: inset 0 0 0 1px var(--agent-solid, var(--accent));
+    background: var(--agent-soft, var(--accent-soft));
+  }
+  60% {
+    opacity: 1;
+    transform: none;
+    box-shadow: inset 0 0 0 1px var(--agent-solid, var(--accent));
+    background: var(--agent-soft, var(--accent-soft));
+  }
+}
+
+@keyframes ak-count {
+  from {
+    transform: translateY(-3px);
+    opacity: 0.2;
+  }
+}
+
+/* ---------------------------------------------------------------- small actions */
+
+.ak-tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: var(--r-sm);
+  color: var(--ink-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out);
+}
+
+.ak-tool[data-labelled] {
+  padding: 0 9px 0 7px;
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  color: var(--ink-soft);
+}
+
+.ak-tool:not(:disabled):hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.ak-tool:not(:disabled):active {
+  background: var(--pressed);
+}
+
+.ak-tool[data-tone='danger']:not(:disabled):hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.ak-tool[data-tone='agent'] {
+  box-shadow: none;
+  background: var(--agent-solid, var(--accent-fill));
+  color: var(--agent-on-solid, var(--on-accent));
+}
+
+.ak-tool[data-tone='agent']:not(:disabled):hover {
+  background: var(--agent-deep, var(--accent-hover));
+  color: var(--agent-on-solid, var(--on-accent));
+}
+
+.ak-tool:disabled {
+  opacity: 0.45;
+}
+
+/* ---------------------------------------------------------------- frame */
+
+/* A card with the clipped corner and a hairline that follows it: the outer box is the line, the inner one the paper. */
+.ak-frame {
+  --chamfer: 11px;
+  min-width: 0;
+  padding: 1px;
+  background: var(--agent-border, var(--hairline-strong));
+  clip-path: var(--clip-chamfer);
+}
+
+.ak-frame__body {
+  --chamfer: 10.4px;
+  height: 100%;
+  background: var(--surface);
+  clip-path: var(--clip-chamfer);
+}

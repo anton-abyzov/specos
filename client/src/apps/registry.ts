@@ -5,6 +5,7 @@
  */
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { APP_COLORS } from '../design/color';
+import { chatMenus } from './chat/menus';
 import { terminalMenus } from './terminal/menus';
 
 export type AppId = 'files' | 'terminal' | 'editor' | 'chat' | 'agents' | 'activity' | 'system' | 'agent';
@@ -93,10 +94,11 @@ export const APPS: Record<AppId, AppDefinition> = {
     description: 'Give an agent a job in plain words.',
     color: APP_COLORS.chat,
     component: lazy(() => import('./chat/index')),
-    defaultSize: { w: 720, h: 680 },
+    defaultSize: { w: 920, h: 700 },
     minSize: { w: 440, h: 400 },
     singleton: true,
     inDock: true,
+    menus: chatMenus,
   },
   agents: {
     id: 'agents',
