@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { getApp } from '../apps/registry';
 import { AppIcon } from '../design/icons';
 import { spring } from '../design/motion';
+import { useAgentsStore } from '../stores/agents';
 import { DESKTOP_COUNT } from '../stores/shell';
 import { MENUBAR_HEIGHT } from './wm/geometry';
 import { trackPointer } from './wm/gestures';
@@ -64,6 +65,7 @@ function Miniature({ windows, scale }: { windows: WindowState[]; scale: number }
 
 function OverviewSurface() {
   const windows = useWindowsStore((state) => state.windows);
+  const agents = useAgentsStore((state) => state.agents);
   const desktop = useWindowsStore((state) => state.desktop);
   const viewport = useWindowsStore((state) => state.viewport);
   const tiles = useMemo(() => overviewTiles(windows, desktop, viewport), [windows, desktop, viewport]);
@@ -196,6 +198,10 @@ function OverviewSurface() {
       <div className="overview__tiles" role="listbox" aria-label="Windows">
         {tiles.map((tile) => {
           const win = windows[tile.id]!;
+          const appName = getApp(win.appId).name;
+          // An agent's window is named after the agent; other titles lose the app's name in front, which the label already says.
+          const ownTitle = win.title.startsWith(appName) ? win.title.slice(appName.length).replace(/^\s*[·:]\s*/, '') : win.title;
+          const agent = win.appId === 'agent' && typeof win.params.agentId === 'string' ? agents[win.params.agentId] : undefined;
           return (
             <button
               key={tile.id}
@@ -221,10 +227,9 @@ function OverviewSurface() {
               }}
             >
               <span className="overview__label">
-                <AppIcon id={win.appId} size={tile.minimized ? 14 : 16} />
-                {/* The app's name says what kind of window it is; an agent's window is named after the agent alone. */}
-                {win.appId !== 'agent' && <span className="overview__label-app">{getApp(win.appId).name}</span>}
-                {win.title !== getApp(win.appId).name && <span className="overview__label-text">{win.title}</span>}
+                <AppIcon id={win.appId} size={tile.minimized ? 14 : 16} hue={agent?.hue} seed={agent?.id} />
+                {win.appId !== 'agent' && <span className="overview__label-app">{appName}</span>}
+                {ownTitle !== '' && <span className="overview__label-text">{ownTitle}</span>}
               </span>
             </button>
           );

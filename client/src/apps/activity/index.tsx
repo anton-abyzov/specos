@@ -159,7 +159,7 @@ export default function ActivityApp({ windowId, params, setTitle, focused }: App
   }, [viewKey]);
 
   useEffect(() => {
-    setTitle(viewedWorkspace ? `Activity: ${viewedWorkspace.name}` : 'Activity');
+    setTitle(viewedWorkspace ? `Activity · ${viewedWorkspace.name}` : 'Activity');
   }, [viewedWorkspace?.name, setTitle]);
 
   // ---------------------------------------------------------------- actions

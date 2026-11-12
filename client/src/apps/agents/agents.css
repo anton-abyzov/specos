@@ -123,9 +123,10 @@
 .agents__scroll {
   flex: 1;
   min-height: 0;
-  padding: var(--s-4);
+  /* The gutter is kept on both sides, so the cards have the same margin left and right. */
+  padding: var(--s-4) 6px;
   overflow-y: auto;
-  scrollbar-gutter: stable;
+  scrollbar-gutter: stable both-edges;
 }
 
 .agents__section {

@@ -53,7 +53,11 @@ export function pathInWorkspace(path: string, workspace: Workspace): string {
 /** The prompt on one line, cut for a title. */
 export function shortPrompt(prompt: string, max = 48): string {
   const line = prompt.replace(/\s+/g, ' ').trim();
-  return line.length > max ? line.slice(0, max - 1).trimEnd() + '…' : line;
+  if (line.length <= max) return line;
+  const cut = line.slice(0, max - 1);
+  // Back to the end of the last whole word when that keeps most of the line, and never "notes.…".
+  const atWord = cut.lastIndexOf(' ') > max / 2 && line[max - 1] !== ' ' ? cut.slice(0, cut.lastIndexOf(' ')) : cut;
+  return atWord.replace(/[\s.,;:!?-]+$/, '') + '…';
 }
 
 /** A project path as its folder name. */
