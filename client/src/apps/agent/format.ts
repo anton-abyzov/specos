@@ -1,4 +1,4 @@
-import type { AgentInfo, AgentStatus, ChangeKind, Workspace } from '@shared/protocol';
+import type { AgentInfo, AgentStatus, ChangeKind, TouchedFile, Workspace } from '@shared/protocol';
 
 export const STATUS_LABEL: Record<AgentStatus, string> = {
   starting: 'starting',
@@ -61,3 +61,13 @@ export const projectName = (project: string): string => project.replace(/^Projec
 
 /** A follow-up works in the copy its first job made; only that first job cloned anything. */
 export const madeWorkspace = (agent: AgentInfo): boolean => agent.continues === undefined;
+
+/**
+ * The files an agent changed itself. The copy of an attached file also shows
+ * up as a change in its workspace, but that one is the user's doing.
+ */
+export function ownChanges(files: TouchedFile[], workspace: Workspace, attachments: string[]): TouchedFile[] {
+  if (attachments.length === 0) return files;
+  const copies = new Set(attachments.map((path) => `${workspace.path}/attachments/${baseName(path)}`));
+  return files.filter((file) => !copies.has(file.path));
+}

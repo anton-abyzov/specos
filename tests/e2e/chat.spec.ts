@@ -1,7 +1,17 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { login, shots, trackErrors } from './helpers';
 
-const WORKSPACE_LINE = /^workspace notes-[\w-]+ · (worktree|reflink|copy) · [\d.]+ (ms|s)$/;
+const WORKSPACE_LINE = /^workspace journal-[\w-]+ · (worktree|reflink|copy) · [\d.]+ (ms|s)$/;
+
+/** Stops and forgets every job earlier specs left on the shared server, so the counts here start at zero. */
+async function clearAgents(page: Page): Promise<void> {
+  const list = async (): Promise<Array<{ id: string; status: string }>> => (await (await page.request.get('/api/agents')).json()).agents;
+  for (const agent of await list()) {
+    if (agent.status === 'starting' || agent.status === 'running') await page.request.post(`/api/agents/${agent.id}/stop`);
+  }
+  await expect.poll(async () => (await list()).filter((agent) => agent.status === 'starting' || agent.status === 'running').length).toBe(0);
+  for (const agent of await list()) await page.request.delete(`/api/agents/${agent.id}`);
+}
 
 async function openChat(page: Page): Promise<Locator> {
   await page.evaluate(() => window.__specos!.openApp!('chat'));
@@ -37,7 +47,8 @@ test('messages start agents that answer at once, side by side, and survive a rel
   test.setTimeout(120_000);
   const errors = trackErrors(page);
   await login(page);
-  const made = await page.request.put('/api/fs/write?path=Projects/notes/note.md', {
+  await clearAgents(page);
+  const made = await page.request.put('/api/fs/write?path=Projects/journal/note.md', {
     data: '# Notes\n\nA first line.\n',
     headers: { 'content-type': 'text/plain' },
   });
@@ -50,10 +61,10 @@ test('messages start agents that answer at once, side by side, and survive a rel
   // Ctrl+P opens the project list; a few letters and Enter choose, and the keyboard is back in the composer.
   await page.keyboard.press('Control+p');
   await expect(chat.getByTestId('project-picker-input')).toBeFocused();
-  await page.keyboard.type('nts');
-  await expect(chat.getByTestId('project-option').first()).toContainText('notes');
+  await page.keyboard.type('jrnl');
+  await expect(chat.getByTestId('project-option').first()).toContainText('journal');
   await page.keyboard.press('Enter');
-  await expect(chat.getByTestId('project-chip')).toHaveText('notes');
+  await expect(chat.getByTestId('project-chip')).toHaveText('journal');
   await expect(input).toBeFocused();
 
   // "@" at the start of a word opens the same list.

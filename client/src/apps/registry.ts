@@ -6,6 +6,8 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { APP_COLORS } from '../design/color';
 import { activityMenus } from './activity/menus';
+import { agentMenus } from './agent/menus';
+import { agentsMenus } from './agents/menus';
 import { chatMenus } from './chat/menus';
 import { terminalMenus } from './terminal/menus';
 
@@ -111,6 +113,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     minSize: { w: 520, h: 360 },
     singleton: true,
     inDock: true,
+    menus: agentsMenus,
   },
   activity: {
     id: 'activity',
@@ -141,10 +144,11 @@ export const APPS: Record<AppId, AppDefinition> = {
     description: 'One agent job, live.',
     color: APP_COLORS.agent,
     component: lazy(() => import('./agent/index')),
-    defaultSize: { w: 680, h: 600 },
+    defaultSize: { w: 760, h: 600 },
     minSize: { w: 420, h: 320 },
     singleton: false,
     inDock: false,
+    menus: agentMenus,
   },
 };
 

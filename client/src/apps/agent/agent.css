@@ -1,0 +1,276 @@
+/* An agent's own window: header, the live stream, a slim column of files, and a follow-up field once it rests. */
+
+.agent-app {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  container: agent-app / inline-size;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.agent-app__header {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex: none;
+  min-width: 0;
+  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-4);
+  border-bottom: 1px solid var(--agent-border);
+  background: var(--agent-soft);
+}
+
+.agent-app__who {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.agent-app__name {
+  overflow: hidden;
+  color: var(--agent-text);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.015em;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-app__facts {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.agent-app__runner {
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+
+.agent-app__tools {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-width: 0;
+  margin-left: auto;
+}
+
+.agent-app__tools .ak-chip {
+  background: var(--surface);
+}
+
+.agent-app__columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 208px;
+  flex: 1;
+  min-height: 0;
+}
+
+.agent-app__stream {
+  min-width: 0;
+}
+
+.agent-app__jobs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  padding: var(--s-4) var(--s-3) var(--s-4) var(--s-4);
+}
+
+.agent-app__job {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.agent-app__side {
+  min-width: 0;
+  padding: var(--s-3);
+  overflow-y: auto;
+  border-left: 1px solid var(--hairline);
+  background: var(--surface-sunken);
+}
+
+.agent-app__label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  line-height: 1.2;
+}
+
+.agent-app__label span {
+  font-family: var(--font-mono);
+}
+
+.agent-app__label:not(:first-child) {
+  margin-top: var(--s-5);
+}
+
+.agent-app__chips {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  margin-top: var(--s-2);
+}
+
+.agent-app__chips li {
+  max-width: 100%;
+}
+
+.agent-app__chips .ak-chip {
+  background: var(--surface);
+}
+
+.agent-app__none {
+  color: var(--ink-faint);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+}
+
+.agent-app__notice {
+  margin-top: var(--s-3);
+  padding: 6px var(--s-2);
+  border-radius: var(--r-sm);
+  background: var(--danger-soft);
+  color: var(--danger);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.agent-app__followup {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s-2);
+  flex: none;
+  padding: var(--s-2) var(--s-3) var(--s-3) var(--s-4);
+  border-top: 1px solid var(--hairline);
+}
+
+.agent-app__field {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 7px var(--s-3);
+  border: 0;
+  border-radius: var(--r-sm);
+  box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  background: var(--surface-raised);
+  line-height: 1.45;
+  resize: none;
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+  caret-color: var(--agent-solid);
+}
+
+.agent-app__field::placeholder {
+  color: var(--ink-faint);
+  opacity: 1;
+}
+
+.agent-app__field:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1.5px var(--agent-solid);
+}
+
+.agent-app__followup .ak-tool {
+  width: 34px;
+  height: 34px;
+}
+
+/* A file is over the window: the whole body answers in the agent's colour. */
+.agent-app__drop {
+  position: absolute;
+  inset: var(--s-2);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  border: 2px dashed var(--agent-solid);
+  border-radius: var(--r-md);
+  background: color-mix(in oklch, var(--surface) 82%, var(--agent-solid));
+  backdrop-filter: var(--blur-soft);
+  color: var(--agent-text);
+  pointer-events: none;
+  animation: agent-drop-in var(--t-fast) var(--ease-out);
+}
+
+.agent-app__drop p {
+  margin-top: var(--s-2);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.agent-app__drop span {
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
+
+@keyframes agent-drop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+@container agent-app (max-width: 560px) {
+  .agent-app__columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .agent-app__side {
+    display: none;
+  }
+  .agent-app__tools .ak-chip__kind {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------- a job the server has forgotten */
+
+.agent-gone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  height: 100%;
+  padding: var(--s-6);
+  background: var(--surface);
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+.agent-gone__title {
+  margin-top: var(--s-2);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.agent-gone__text {
+  max-width: 44ch;
+  margin-bottom: var(--s-3);
+  color: var(--ink-muted);
+  line-height: 1.45;
+}
